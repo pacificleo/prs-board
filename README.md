@@ -58,7 +58,9 @@ Notes can also be set to look a bit different. This is useful for partitioning l
 
 ![Raw notes](images/nullboard-raw-notes.gif)
 
-Links starting with https:// and http:// are recognized. They will "pulse" on mouse hover and can be opened via the right-click menu.
+Notes can be marked as complete via the ✓ icon. Completed notes get strikethrough text and are moved below a "Completed (N)" divider. The divider can be collapsed to hide completed notes. Dragging notes across the divider toggles their completed state.
+
+Links starting with https:// and http:// are recognized and open in new tabs. Markdown-style titled links are also supported — write `[My Doc](https://example.com/long-url)` to display a clean clickable "My Doc" link instead of a long URL.
 
 ![Links on hover](images/nullboard-links-on-hover.gif)
 
@@ -77,6 +79,8 @@ The font can be changed; its size and line height can be adjusted:
 The color theme can be inverted:
 
 ![Dark theme](images/nullboard-dark-theme.gif)
+
+Each list can have its own background color from a curated 11-color pastel palette, selectable via the list menu.
 
 Also:
 

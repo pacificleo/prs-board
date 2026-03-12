@@ -1854,7 +1854,7 @@
 				<div class=bulk>
 					<a href=# class='done-note'>&#x2713;</a>
 					<a href=# class='del-note warn'>&#x2715;</a>
-					<a href=# class='raw-note'>&#xA7;</a>
+					<a href=# class='raw-note'>&#xB6;</a>
 					<a href=# class='collapse'>&#x2015;</a>
 				</div>
 			</div>
@@ -4438,7 +4438,12 @@
 
 		text = htmlEncode(text);
 
-		var hmmm = /\b(https?:\/\/[^\s]+)/mg;
+		var titled = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/mg;
+		text = text.replace(titled, function(full, title, url){
+			return '<a href="' + url + '" target=_blank>' + title + '</a>';
+		});
+
+		var hmmm = /\b(https?:\/\/[^\s]+)(?![^<]*<\/a>)/mg;
 		text = text.replace(hmmm, function(url){
 			return '<a href="' + url + '" target=_blank>' + url + '</a>';
 		});

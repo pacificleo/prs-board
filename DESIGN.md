@@ -102,9 +102,10 @@ Board                      # Board data container
 ### List
 ```
 {
-  title: <string>,
-  notes: [ Note, ... ],
-  color: <string (Nord palette key, e.g. "frost-1", "red", "purple")>
+  title:        <string>,
+  notes:        [ Note, ... ],
+  color:        <string (palette key, e.g. "blue", "red", "purple")>,
+  completedMin: <boolean (collapsed state of completed section)>
 }
 ```
 
@@ -113,7 +114,8 @@ Board                      # Board data container
 {
   text: <string (HTML content)>,
   raw:  <boolean (raw text vs formatted)>,
-  min:  <boolean (collapsed state)>
+  min:  <boolean (collapsed state)>,
+  done: <boolean (completed state)>
 }
 ```
 
@@ -185,7 +187,19 @@ Each board maintains a history array of up to 50 revision IDs. When a board is s
 
 ### Link Recognition
 - Detects `http://` and `https://` URLs in note text
+- Supports markdown-style titled links: `[title](url)` renders as a clickable title
+- All links open in new tabs (`target=_blank`)
 - Links are always visible and left-clickable
+
+### Completed Notes
+- Notes can be marked complete via the `✓` button in the note popup
+- Completed notes display with strikethrough text and reduced opacity
+- Completed notes are moved below an auto-generated "Completed (N)" divider
+- The divider shows the count of completed notes and can be collapsed to hide them
+- Completed notes are read-only; un-complete them to edit again
+- Dragging a note across the divider automatically toggles its done state
+- The divider is purely dynamic (not saved to data) and only appears when completed notes exist
+- The divider's collapsed state persists per list via `List.completedMin`
 
 ### Theming & Visual Design
 - Notion/Trello-inspired modern UI with clean, rounded aesthetics
@@ -206,22 +220,24 @@ Each board maintains a history array of up to 50 revision IDs. When a board is s
 | Focus ring | `0 0 0 2px #2383e2` | `0 0 0 2px #d4a72c` | — |
 
 #### Per-List Color Palette
-Each list can have its own pastel background color from the **Nord** palette (Frost + Aurora):
+Each list can have its own pastel background color from a curated 11-color palette:
 
-| Name | Light | Dark | Source |
-|------|-------|------|--------|
-| Frost 1 (Polar Water) | `#dae9f1` | `#1c2a33` | Nord Frost |
-| Frost 2 (Ice) | `#d0e6ee` | `#1a2830` | Nord Frost |
-| Frost 3 (Arctic) | `#cddfe9` | `#1c2530` | Nord Frost |
-| Frost 4 (Mint) | `#d3e8df` | `#1a2b26` | Nord Frost |
-| Red | `#f0d5d8` | `#2d1c24` | Nord Aurora |
-| Orange | `#f2ddd2` | `#2b2218` | Nord Aurora |
-| Yellow | `#f5ecd5` | `#2a2618` | Nord Aurora |
-| Green | `#dde8d6` | `#1e2a1c` | Nord Aurora |
-| Purple | `#e4d5e8` | `#251e33` | Nord Aurora |
+| Name | Light | Dark |
+|------|-------|------|
+| Polar Water | `#dae9f1` | `#1c2a33` |
+| Blue | `#dbeafe` | `#1c2433` |
+| Pine | `#d8dce8` | `#1e2030` |
+| Sky | `#d2e8f5` | `#1a2733` |
+| Foam | `#d5e3e5` | `#1c2828` |
+| Lichen | `#d5ddd0` | `#222820` |
+| Yellow | `#f2e6d0` | `#2a2618` |
+| Sakura | `#e8d5d0` | `#2b201e` |
+| Red | `#f2d0d5` | `#2d1c22` |
+| Purple | `#e4d5e8` | `#251e33` |
+| Lavender | `#dddaf5` | `#1e1c33` |
 
 - New lists are auto-assigned a random color
-- Color picker (square dots) available in each list's `≡` dropdown menu
+- Color picker (dots) available in each list's `≡` dropdown menu
 - Color is stored in `List.color` and persisted with board data
 - "None" option reverts to default list background
 
