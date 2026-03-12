@@ -15,7 +15,7 @@ Nullboard is a minimalist, offline-first kanban board / task list manager delive
 - Drag-and-drop reordering of notes and lists
 - Export/import via `.nbx` JSON files
 - Optional backup to external HTTP agents
-- Light and dark themes with customizable fonts
+- Modern Notion/Trello-inspired UI with light and dark themes
 
 ---
 
@@ -186,11 +186,30 @@ Each board maintains a history array of up to 50 revision IDs. When a board is s
 - Detects `http://` and `https://` URLs in note text
 - Links are always visible and left-clickable
 
-### Theming
+### Theming & Visual Design
+- Notion/Trello-inspired modern UI with clean, rounded aesthetics
 - Light and dark themes via CSS class switching
 - CSS custom properties (`--var`) for colors and dimensions
 - 5 font choices with adjustable size, line height, and list width
 - All preferences persisted in AppConfig
+
+#### Design System
+| Element | Light | Dark | Radius |
+|---------|-------|------|--------|
+| Body background | `#f5f5f4` | `#191919` | — |
+| Board head | `#fff` with subtle shadow | `#252525` | 10px |
+| Lists | `#ebebea` | `#252525` | 10px |
+| Notes | `#fff` with soft shadow | `#2f2f2f` | 8px |
+| Modals | `#fff` with backdrop blur | — | 12px |
+| Accent color | `#2383e2` (Notion blue) | `#fc2` (gold) | — |
+| Focus ring | `0 0 0 2px #2383e2` | `0 0 0 2px #d4a72c` | — |
+
+#### Typography
+- Base font size: 15px (up from original 11px)
+- Line-height multiplier: 1.35
+- Board heading: 17px
+- Menu/ops icons: font-weight 600–700
+- Note text: generous padding (8px 12px)
 
 ### Export / Import
 - Format: `.nbx` files (JSON)

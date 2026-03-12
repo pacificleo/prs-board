@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Nullboard - Board Color Preview</title>
+<style>
+	* { box-sizing: border-box; margin: 0; padding: 0; }
+
+	body {
+		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+		background: #f5f5f4;
+		padding: 30px;
+	}
+
+	h1 {
+		text-align: center;
+		font-size: 24px;
+		font-weight: 600;
+		color: #222;
+		margin-bottom: 6px;
+	}
+
+	.subtitle {
+		text-align: center;
+		color: #888;
+		font-size: 14px;
+		margin-bottom: 40px;
+	}
+
+	.section-title {
+		font-size: 13px;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 1px;
+		color: #999;
+		margin: 40px 0 16px;
+		padding-left: 4px;
+	}
+
+	.section-title:first-of-type { margin-top: 0; }
+
+	.grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+		gap: 18px;
+		max-width: 1600px;
+		margin: 0 auto;
+	}
+
+	.board-card {
+		border-radius: 12px;
+		overflow: hidden;
+		transition: transform 200ms, box-shadow 200ms;
+	}
+
+	.board-card:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+	}
+
+	.board-head {
+		padding: 10px 14px;
+		border-radius: 10px;
+		margin: 12px 12px 10px;
+		font-size: 15px;
+		font-weight: 600;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+
+	.board-head .menu-dots {
+		font-size: 12px;
+		font-weight: 600;
+		opacity: 0.4;
+	}
+
+	.lists {
+		display: flex;
+		gap: 8px;
+		padding: 0 12px 12px;
+	}
+
+	.list {
+		flex: 1;
+		border-radius: 10px;
+		padding: 8px;
+	}
+
+	.list-title {
+		font-size: 13px;
+		font-weight: 600;
+		padding: 2px 6px 6px;
+	}
+
+	.note {
+		border-radius: 8px;
+		padding: 8px 10px;
+		margin-bottom: 5px;
+		font-size: 12px;
+		line-height: 1.4;
+	}
+
+	.note .link {
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+
+	.note.raw {
+		background: transparent !important;
+		box-shadow: none !important;
+		font-weight: 600;
+		padding: 4px 6px;
+		font-size: 11px;
+		text-transform: uppercase;
+		letter-spacing: 0.3px;
+	}
+
+	.color-name {
+		text-align: center;
+		font-size: 11px;
+		color: #999;
+		padding: 6px 0 10px;
+		font-weight: 500;
+	}
+
+	/* Dark section wrapper */
+	.dark-section {
+		background: #191919;
+		margin: 0 -30px;
+		padding: 0 30px 30px;
+	}
+	.dark-section .section-title { color: #666; }
+	.dark-section .color-name { color: #666; }
+	.dark-section .board-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+
+	/* ============================================================
+	   NORD FROST — cool arctic pastels
+	   ============================================================ */
+	.light-common .board-head { background: rgba(255,255,255,0.7); }
+	.light-common .list { background: rgba(255,255,255,0.35); }
+	.light-common .note { background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+
+	.c-frost-1 { background: #dae9f1; }
+	.c-frost-1, .c-frost-1 .board-head, .c-frost-1 .note { color: #2e3440; }
+	.c-frost-1 .list-title { color: #3b4252; }
+	.c-frost-1 .note .link { color: #5e81ac; }
+	.c-frost-1 .note.raw { color: #4c566a; }
+
+	.c-frost-2 { background: #d0e6ee; }
+	.c-frost-2, .c-frost-2 .board-head, .c-frost-2 .note { color: #2e3440; }
+	.c-frost-2 .list-title { color: #3b4252; }
+	.c-frost-2 .note .link { color: #5e81ac; }
+	.c-frost-2 .note.raw { color: #4c566a; }
+
+	.c-frost-3 { background: #cddfe9; }
+	.c-frost-3, .c-frost-3 .board-head, .c-frost-3 .note { color: #2e3440; }
+	.c-frost-3 .list-title { color: #3b4252; }
+	.c-frost-3 .note .link { color: #5e81ac; }
+	.c-frost-3 .note.raw { color: #4c566a; }
+
+	.c-frost-4 { background: #d3e8df; }
+	.c-frost-4, .c-frost-4 .board-head, .c-frost-4 .note { color: #2e3440; }
+	.c-frost-4 .list-title { color: #3b4252; }
+	.c-frost-4 .note .link { color: #5e81ac; }
+	.c-frost-4 .note.raw { color: #4c566a; }
+
+	/* ============================================================
+	   NORD AURORA — warm accent pastels
+	   ============================================================ */
+	.c-aurora-red { background: #f0d5d8; }
+	.c-aurora-red, .c-aurora-red .board-head, .c-aurora-red .note { color: #2e3440; }
+	.c-aurora-red .list-title { color: #3b4252; }
+	.c-aurora-red .note .link { color: #bf616a; }
+	.c-aurora-red .note.raw { color: #6b4048; }
+
+	.c-aurora-orange { background: #f2ddd2; }
+	.c-aurora-orange, .c-aurora-orange .board-head, .c-aurora-orange .note { color: #2e3440; }
+	.c-aurora-orange .list-title { color: #3b4252; }
+	.c-aurora-orange .note .link { color: #d08770; }
+	.c-aurora-orange .note.raw { color: #7a5a4a; }
+
+	.c-aurora-yellow { background: #f5ecd5; }
+	.c-aurora-yellow, .c-aurora-yellow .board-head, .c-aurora-yellow .note { color: #2e3440; }
+	.c-aurora-yellow .list-title { color: #3b4252; }
+	.c-aurora-yellow .note .link { color: #c59a2c; }
+	.c-aurora-yellow .note.raw { color: #6b5e30; }
+
+	.c-aurora-green { background: #dde8d6; }
+	.c-aurora-green, .c-aurora-green .board-head, .c-aurora-green .note { color: #2e3440; }
+	.c-aurora-green .list-title { color: #3b4252; }
+	.c-aurora-green .note .link { color: #7a9e5a; }
+	.c-aurora-green .note.raw { color: #556b40; }
+
+	.c-aurora-purple { background: #e4d5e8; }
+	.c-aurora-purple, .c-aurora-purple .board-head, .c-aurora-purple .note { color: #2e3440; }
+	.c-aurora-purple .list-title { color: #3b4252; }
+	.c-aurora-purple .note .link { color: #b48ead; }
+	.c-aurora-purple .note.raw { color: #6b5068; }
+
+	/* ============================================================
+	   CATPPUCCIN LATTE — warm light pastels
+	   ============================================================ */
+	.c-lat-rosewater { background: #f5e0db; }
+	.c-lat-flamingo  { background: #f5d7d7; }
+	.c-lat-pink      { background: #f4d6ee; }
+	.c-lat-mauve     { background: #e0d5f0; }
+	.c-lat-red       { background: #f2d0d5; }
+	.c-lat-maroon    { background: #f2d5da; }
+	.c-lat-peach     { background: #f5dfd0; }
+	.c-lat-yellow    { background: #f2e6d0; }
+	.c-lat-green     { background: #d5e8d2; }
+	.c-lat-teal      { background: #d0ece6; }
+	.c-lat-sky       { background: #d2e8f5; }
+	.c-lat-sapphire  { background: #d0e4f0; }
+	.c-lat-blue      { background: #d5dcf5; }
+	.c-lat-lavender  { background: #dddaf5; }
+
+	[class*="c-lat-"], [class*="c-lat-"] .board-head, [class*="c-lat-"] .note { color: #4c4f69; }
+	[class*="c-lat-"] .list-title { color: #5c5f77; }
+	[class*="c-lat-"] .note.raw { color: #6c6f85; }
+
+	.c-lat-rosewater .note .link { color: #dc8a78; }
+	.c-lat-flamingo  .note .link { color: #dd7878; }
+	.c-lat-pink      .note .link { color: #ea76cb; }
+	.c-lat-mauve     .note .link { color: #8839ef; }
+	.c-lat-red       .note .link { color: #d20f39; }
+	.c-lat-maroon    .note .link { color: #e64553; }
+	.c-lat-peach     .note .link { color: #fe640b; }
+	.c-lat-yellow    .note .link { color: #df8e1d; }
+	.c-lat-green     .note .link { color: #40a02b; }
+	.c-lat-teal      .note .link { color: #179299; }
+	.c-lat-sky       .note .link { color: #04a5e5; }
+	.c-lat-sapphire  .note .link { color: #209fb5; }
+	.c-lat-blue      .note .link { color: #1e66f5; }
+	.c-lat-lavender  .note .link { color: #7287fd; }
+
+	/* ============================================================
+	   CATPPUCCIN FRAPPE — muted medium-dark
+	   ============================================================ */
+	.dark-common .board-head { background: rgba(255,255,255,0.06); }
+	.dark-common .list { background: rgba(255,255,255,0.04); }
+	.dark-common .note { background: rgba(255,255,255,0.07); box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+
+	.c-fra-rosewater { background: #352f30; }
+	.c-fra-flamingo  { background: #352d2d; }
+	.c-fra-pink      { background: #342d36; }
+	.c-fra-mauve     { background: #302a3a; }
+	.c-fra-red       { background: #352830; }
+	.c-fra-peach     { background: #352e28; }
+	.c-fra-yellow    { background: #343025; }
+	.c-fra-green     { background: #283028; }
+	.c-fra-teal      { background: #253133; }
+	.c-fra-sky       { background: #253035; }
+	.c-fra-sapphire  { background: #253035; }
+	.c-fra-blue      { background: #282a38; }
+	.c-fra-lavender  { background: #2c2c3a; }
+
+	[class*="c-fra-"], [class*="c-fra-"] .board-head, [class*="c-fra-"] .note { color: #c6d0f5; }
+	[class*="c-fra-"] .list-title { color: #a5adce; }
+	[class*="c-fra-"] .note.raw { color: #838ba7; }
+
+	.c-fra-rosewater .note .link { color: #f2d5cf; }
+	.c-fra-flamingo  .note .link { color: #eebebe; }
+	.c-fra-pink      .note .link { color: #f4b8e4; }
+	.c-fra-mauve     .note .link { color: #ca9ee6; }
+	.c-fra-red       .note .link { color: #e78284; }
+	.c-fra-peach     .note .link { color: #ef9f76; }
+	.c-fra-yellow    .note .link { color: #e5c890; }
+	.c-fra-green     .note .link { color: #a6d189; }
+	.c-fra-teal      .note .link { color: #81c8be; }
+	.c-fra-sky       .note .link { color: #99d1db; }
+	.c-fra-sapphire  .note .link { color: #85c1dc; }
+	.c-fra-blue      .note .link { color: #8caaee; }
+	.c-fra-lavender  .note .link { color: #babbf1; }
+
+	/* ============================================================
+	   CATPPUCCIN MACCHIATO — rich dark
+	   ============================================================ */
+	.c-mac-rosewater { background: #2e2829; }
+	.c-mac-flamingo  { background: #2e2626; }
+	.c-mac-pink      { background: #2d2530; }
+	.c-mac-mauve     { background: #29233a; }
+	.c-mac-red       { background: #2e2128; }
+	.c-mac-peach     { background: #2e2722; }
+	.c-mac-yellow    { background: #2d2920; }
+	.c-mac-green     { background: #222922; }
+	.c-mac-teal      { background: #1f2a2c; }
+	.c-mac-sky       { background: #1f292e; }
+	.c-mac-sapphire  { background: #1f292e; }
+	.c-mac-blue      { background: #212332; }
+	.c-mac-lavender  { background: #252534; }
+
+	[class*="c-mac-"], [class*="c-mac-"] .board-head, [class*="c-mac-"] .note { color: #cad3f5; }
+	[class*="c-mac-"] .list-title { color: #a5adce; }
+	[class*="c-mac-"] .note.raw { color: #8087a2; }
+
+	.c-mac-rosewater .note .link { color: #f4dbd6; }
+	.c-mac-flamingo  .note .link { color: #f0c6c6; }
+	.c-mac-pink      .note .link { color: #f5bde6; }
+	.c-mac-mauve     .note .link { color: #c6a0f6; }
+	.c-mac-red       .note .link { color: #ed8796; }
+	.c-mac-peach     .note .link { color: #f5a97f; }
+	.c-mac-yellow    .note .link { color: #eed49f; }
+	.c-mac-green     .note .link { color: #a6da95; }
+	.c-mac-teal      .note .link { color: #8bd5ca; }
+	.c-mac-sky       .note .link { color: #91d7e3; }
+	.c-mac-sapphire  .note .link { color: #7dc4e4; }
+	.c-mac-blue      .note .link { color: #8aadf4; }
+	.c-mac-lavender  .note .link { color: #b7bdf8; }
+
+	/* ============================================================
+	   CATPPUCCIN MOCHA — deepest dark
+	   ============================================================ */
+	.c-moc-rosewater { background: #272022; }
+	.c-moc-flamingo  { background: #271e1e; }
+	.c-moc-pink      { background: #261e2a; }
+	.c-moc-mauve     { background: #221c32; }
+	.c-moc-red       { background: #271b22; }
+	.c-moc-peach     { background: #27201b; }
+	.c-moc-yellow    { background: #262219; }
+	.c-moc-green     { background: #1c221c; }
+	.c-moc-teal      { background: #192325; }
+	.c-moc-sky       { background: #192228; }
+	.c-moc-sapphire  { background: #192228; }
+	.c-moc-blue      { background: #1b1d2c; }
+	.c-moc-lavender  { background: #1f1f2d; }
+
+	[class*="c-moc-"], [class*="c-moc-"] .board-head, [class*="c-moc-"] .note { color: #cdd6f4; }
+	[class*="c-moc-"] .list-title { color: #a6adc8; }
+	[class*="c-moc-"] .note.raw { color: #7f849c; }
+
+	.c-moc-rosewater .note .link { color: #f5e0dc; }
+	.c-moc-flamingo  .note .link { color: #f2cdcd; }
+	.c-moc-pink      .note .link { color: #f5c2e7; }
+	.c-moc-mauve     .note .link { color: #cba6f7; }
+	.c-moc-red       .note .link { color: #f38ba8; }
+	.c-moc-peach     .note .link { color: #fab387; }
+	.c-moc-yellow    .note .link { color: #f9e2af; }
+	.c-moc-green     .note .link { color: #a6e3a1; }
+	.c-moc-teal      .note .link { color: #94e2d5; }
+	.c-moc-sky       .note .link { color: #89dceb; }
+	.c-moc-sapphire  .note .link { color: #74c7ec; }
+	.c-moc-blue      .note .link { color: #89b4fa; }
+	.c-moc-lavender  .note .link { color: #b4befe; }
+</style>
+</head>
+<body>
+
+<h1>Board Color Palette Preview</h1>
+<p class="subtitle">Per-board pastel backgrounds from Nord and Catppuccin palettes</p>
+
+<!-- ==================== NORD ==================== -->
+
+<div class="section-title">Nord Frost</div>
+<div class="grid">
+	<div class="board-card light-common c-frost-1">
+		<div class="board-head">Sprint Board <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">Backlog</div><div class="note raw">Priority</div><div class="note">Design landing page</div><div class="note">Review <span class="link">PR #42</span></div></div>
+			<div class="list"><div class="list-title">In Progress</div><div class="note">API <span class="link">integration</span></div><div class="note">Write tests</div></div>
+		</div>
+		<div class="color-name">Polar Water &mdash; #8fbcbb</div>
+	</div>
+	<div class="board-card light-common c-frost-2">
+		<div class="board-head">Bug Tracker <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">Open</div><div class="note raw">Critical</div><div class="note">Login timeout on <span class="link">Safari</span></div><div class="note">Memory leak</div></div>
+			<div class="list"><div class="list-title">Fixed</div><div class="note">CSS overflow</div><div class="note">Rate limiter</div></div>
+		</div>
+		<div class="color-name">Ice &mdash; #88c0d0</div>
+	</div>
+	<div class="board-card light-common c-frost-3">
+		<div class="board-head">Research <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">Reading</div><div class="note">Paper on <span class="link">transformers</span></div><div class="note">Systems book</div></div>
+			<div class="list"><div class="list-title">Notes</div><div class="note raw">Insights</div><div class="note">Key takeaways</div></div>
+		</div>
+		<div class="color-name">Arctic &mdash; #81a1c1</div>
+	</div>
+	<div class="board-card light-common c-frost-4">
+		<div class="board-head">Roadmap <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">Q1</div><div class="note">Launch v2.0</div><div class="note">Migrate <span class="link">API</span></div></div>
+			<div class="list"><div class="list-title">Q2</div><div class="note raw">Stretch</div><div class="note">Mobile beta</div></div>
+		</div>
+		<div class="color-name">Frost Mint &mdash; #8fbcbb</div>
+	</div>
+</div>
+
+<div class="section-title">Nord Aurora</div>
+<div class="grid">
+	<div class="board-card light-common c-aurora-red">
+		<div class="board-head">Incidents <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">Active</div><div class="note raw">P0</div><div class="note">DB failover <span class="link">alert</span></div><div class="note">API latency spike</div></div>
+			<div class="list"><div class="list-title">Resolved</div><div class="note">Cache miss storm</div><div class="note">DNS propagation</div></div>
+		</div>
+		<div class="color-name">Aurora Red &mdash; #bf616a</div>
+	</div>
+	<div class="board-card light-common c-aurora-orange">
+		<div class="board-head">Content Calendar <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">Draft</div><div class="note">Blog: <span class="link">React tips</span></div><div class="note">Newsletter #12</div></div>
+			<div class="list"><div class="list-title">Published</div><div class="note raw">March</div><div class="note">Case study</div></div>
+		</div>
+		<div class="color-name">Aurora Orange &mdash; #d08770</div>
+	</div>
+	<div class="board-card light-common c-aurora-yellow">
+		<div class="board-head">Ideas <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">Explore</div><div class="note">CLI tool for <span class="link">dotfiles</span></div><div class="note">Theme generator</div></div>
+			<div class="list"><div class="list-title">Parked</div><div class="note raw">Later</div><div class="note">Markdown previewer</div></div>
+		</div>
+		<div class="color-name">Aurora Yellow &mdash; #ebcb8b</div>
+	</div>
+	<div class="board-card light-common c-aurora-green">
+		<div class="board-head">Habits <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">Daily</div><div class="note">Morning run</div><div class="note">Read 30 min</div></div>
+			<div class="list"><div class="list-title">Weekly</div><div class="note raw">Goals</div><div class="note">Meal prep</div></div>
+		</div>
+		<div class="color-name">Aurora Green &mdash; #a3be8c</div>
+	</div>
+	<div class="board-card light-common c-aurora-purple">
+		<div class="board-head">Design System <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">Components</div><div class="note">Button <span class="link">variants</span></div><div class="note">Form inputs</div></div>
+			<div class="list"><div class="list-title">Tokens</div><div class="note raw">Colors</div><div class="note">Typography</div></div>
+		</div>
+		<div class="color-name">Aurora Purple &mdash; #b48ead</div>
+	</div>
+</div>
+
+<!-- ==================== CATPPUCCIN ==================== -->
+
+<div class="section-title">Catppuccin Latte (Light)</div>
+<div class="grid">
+	<div class="board-card light-common c-lat-rosewater">
+		<div class="board-head">Personal <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">Today</div><div class="note">Groceries</div><div class="note">Call <span class="link">dentist</span></div></div>
+			<div class="list"><div class="list-title">Week</div><div class="note raw">Home</div><div class="note">Fix faucet</div></div>
+		</div>
+		<div class="color-name">Rosewater &mdash; #dc8a78</div>
+	</div>
+	<div class="board-card light-common c-lat-flamingo">
+		<div class="board-head">Feedback <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">New</div><div class="note">UX issue on <span class="link">checkout</span></div><div class="note">Mobile nav</div></div>
+			<div class="list"><div class="list-title">Done</div><div class="note raw">Fixed</div><div class="note">Search results</div></div>
+		</div>
+		<div class="color-name">Flamingo &mdash; #dd7878</div>
+	</div>
+	<div class="board-card light-common c-lat-pink">
+		<div class="board-head">Marketing <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">Campaigns</div><div class="note">Spring <span class="link">launch</span></div><div class="note">Social ads</div></div>
+			<div class="list"><div class="list-title">Analytics</div><div class="note raw">Metrics</div><div class="note">CTR report</div></div>
+		</div>
+		<div class="color-name">Pink &mdash; #ea76cb</div>
+	</div>
+	<div class="board-card light-common c-lat-mauve">
+		<div class="board-head">Architecture <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">ADRs</div><div class="note">Microservices vs <span class="link">monolith</span></div><div class="note">DB choice</div></div>
+			<div class="list"><div class="list-title">Diagrams</div><div class="note raw">System</div><div class="note">Auth flow</div></div>
+		</div>
+		<div class="color-name">Mauve &mdash; #8839ef</div>
+	</div>
+	<div class="board-card light-common c-lat-red">
+		<div class="board-head">Incidents <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">Active</div><div class="note raw">P0</div><div class="note">DB <span class="link">failover</span></div></div>
+			<div class="list"><div class="list-title">Resolved</div><div class="note">Cache storm</div><div class="note">DNS issue</div></div>
+		</div>
+		<div class="color-name">Red &mdash; #d20f39</div>
+	</div>
+	<div class="board-card light-common c-lat-peach">
+		<div class="board-head">Content <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">Draft</div><div class="note">Blog: <span class="link">React</span></div><div class="note">Newsletter</div></div>
+			<div class="list"><div class="list-title">Published</div><div class="note raw">March</div><div class="note">Case study</div></div>
+		</div>
+		<div class="color-name">Peach &mdash; #fe640b</div>
+	</div>
+	<div class="board-card light-common c-lat-yellow">
+		<div class="board-head">Ideas <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">Explore</div><div class="note">CLI <span class="link">dotfiles</span></div><div class="note">Generator</div></div>
+			<div class="list"><div class="list-title">Parked</div><div class="note raw">Later</div><div class="note">Previewer</div></div>
+		</div>
+		<div class="color-name">Yellow &mdash; #df8e1d</div>
+	</div>
+	<div class="board-card light-common c-lat-green">
+		<div class="board-head">Habits <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">Daily</div><div class="note">Morning run</div><div class="note">Read 30min</div></div>
+			<div class="list"><div class="list-title">Weekly</div><div class="note raw">Goals</div><div class="note">Meal prep</div></div>
+		</div>
+		<div class="color-name">Green &mdash; #40a02b</div>
+	</div>
+	<div class="board-card light-common c-lat-teal">
+		<div class="board-head">DevOps <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">Infra</div><div class="note">Upgrade <span class="link">k8s</span></div><div class="note">Monitoring</div></div>
+			<div class="list"><div class="list-title">Done</div><div class="note raw">Shipped</div><div class="note">CI/CD</div></div>
+		</div>
+		<div class="color-name">Teal &mdash; #179299</div>
+	</div>
+	<div class="board-card light-common c-lat-sky">
+		<div class="board-head">Research <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">Reading</div><div class="note">Paper: <span class="link">LLMs</span></div><div class="note">Systems</div></div>
+			<div class="list"><div class="list-title">Notes</div><div class="note raw">Key</div><div class="note">Takeaways</div></div>
+		</div>
+		<div class="color-name">Sky &mdash; #04a5e5</div>
+	</div>
+	<div class="board-card light-common c-lat-sapphire">
+		<div class="board-head">Sprint <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">Backlog</div><div class="note">Landing <span class="link">page</span></div><div class="note">Review PR</div></div>
+			<div class="list"><div class="list-title">Active</div><div class="note raw">WIP</div><div class="note">API work</div></div>
+		</div>
+		<div class="color-name">Sapphire &mdash; #209fb5</div>
+	</div>
+	<div class="board-card light-common c-lat-blue">
+		<div class="board-head">Planning <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">Goals</div><div class="note">Ship <span class="link">feature X</span></div><div class="note">Reduce debt</div></div>
+			<div class="list"><div class="list-title">KPIs</div><div class="note raw">Metrics</div><div class="note">Uptime 99.9%</div></div>
+		</div>
+		<div class="color-name">Blue &mdash; #1e66f5</div>
+	</div>
+	<div class="board-card light-common c-lat-lavender">
+		<div class="board-head">Creative <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">Inspiration</div><div class="note">Colors from <span class="link">Dribbble</span></div><div class="note">Typography</div></div>
+			<div class="list"><div class="list-title">Projects</div><div class="note raw">Active</div><div class="note">Portfolio</div></div>
+		</div>
+		<div class="color-name">Lavender &mdash; #7287fd</div>
+	</div>
+	<div class="board-card light-common c-lat-maroon">
+		<div class="board-head">Hiring <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">Pipeline</div><div class="note">Screen <span class="link">candidates</span></div><div class="note">Interviews</div></div>
+			<div class="list"><div class="list-title">Offers</div><div class="note raw">Pending</div><div class="note">Sr. Engineer</div></div>
+		</div>
+		<div class="color-name">Maroon &mdash; #e64553</div>
+	</div>
+</div>
+
+<div class="dark-section">
+
+<div class="section-title">Catppuccin Frappe (Medium Dark)</div>
+<div class="grid">
+	<div class="board-card dark-common c-fra-rosewater">
+		<div class="board-head">Personal <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">Today</div><div class="note">Groceries</div><div class="note">Call <span class="link">dentist</span></div></div>
+			<div class="list"><div class="list-title">Week</div><div class="note raw">Home</div><div class="note">Fix faucet</div></div>
+		</div>
+		<div class="color-name">Rosewater</div>
+	</div>
+	<div class="board-card dark-common c-fra-flamingo">
+		<div class="board-head">Feedback <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">New</div><div class="note">UX <span class="link">checkout</span></div><div class="note">Mobile nav</div></div>
+			<div class="list"><div class="list-title">Done</div><div class="note raw">Fixed</div><div class="note">Search</div></div>
+		</div>
+		<div class="color-name">Flamingo</div>
+	</div>
+	<div class="board-card dark-common c-fra-pink">
+		<div class="board-head">Marketing <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">Campaigns</div><div class="note">Spring <span class="link">launch</span></div><div class="note">Ads</div></div>
+			<div class="list"><div class="list-title">Analytics</div><div class="note raw">Metrics</div><div class="note">CTR</div></div>
+		</div>
+		<div class="color-name">Pink</div>
+	</div>
+	<div class="board-card dark-common c-fra-mauve">
+		<div class="board-head">Architecture <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">ADRs</div><div class="note">Micro vs <span class="link">mono</span></div><div class="note">DB choice</div></div>
+			<div class="list"><div class="list-title">Diagrams</div><div class="note raw">System</div><div class="note">Auth</div></div>
+		</div>
+		<div class="color-name">Mauve</div>
+	</div>
+	<div class="board-card dark-common c-fra-red">
+		<div class="board-head">Incidents <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">Active</div><div class="note raw">P0</div><div class="note">DB <span class="link">failover</span></div></div>
+			<div class="list"><div class="list-title">Resolved</div><div class="note">Cache storm</div><div class="note">DNS</div></div>
+		</div>
+		<div class="color-name">Red</div>
+	</div>
+	<div class="board-card dark-common c-fra-peach">
+		<div class="board-head">Content <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">Draft</div><div class="note">Blog: <span class="link">React</span></div><div class="note">Newsletter</div></div>
+			<div class="list"><div class="list-title">Pub</div><div class="note raw">March</div><div class="note">Case study</div></div>
+		</div>
+		<div class="color-name">Peach</div>
+	</div>
+	<div class="board-card dark-common c-fra-yellow">
+		<div class="board-head">Ideas <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">Explore</div><div class="note">CLI <span class="link">dotfiles</span></div><div class="note">Generator</div></div>
+			<div class="list"><div class="list-title">Parked</div><div class="note raw">Later</div><div class="note">Previewer</div></div>
+		</div>
+		<div class="color-name">Yellow</div>
+	</div>
+	<div class="board-card dark-common c-fra-green">
+		<div class="board-head">Habits <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">Daily</div><div class="note">Run</div><div class="note">Read</div></div>
+			<div class="list"><div class="list-title">Weekly</div><div class="note raw">Goals</div><div class="note">Meal prep</div></div>
+		</div>
+		<div class="color-name">Green</div>
+	</div>
+	<div class="board-card dark-common c-fra-teal">
+		<div class="board-head">DevOps <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">Infra</div><div class="note">Upgrade <span class="link">k8s</span></div><div class="note">Alerts</div></div>
+			<div class="list"><div class="list-title">Done</div><div class="note raw">Shipped</div><div class="note">CI/CD</div></div>
+		</div>
+		<div class="color-name">Teal</div>
+	</div>
+	<div class="board-card dark-common c-fra-sky">
+		<div class="board-head">Research <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">Reading</div><div class="note">Paper: <span class="link">LLMs</span></div><div class="note">Systems</div></div>
+			<div class="list"><div class="list-title">Notes</div><div class="note raw">Key</div><div class="note">Takeaways</div></div>
+		</div>
+		<div class="color-name">Sky</div>
+	</div>
+	<div class="board-card dark-common c-fra-blue">
+		<div class="board-head">Planning <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">Goals</div><div class="note">Ship <span class="link">X</span></div><div class="note">Reduce debt</div></div>
+			<div class="list"><div class="list-title">KPIs</div><div class="note raw">Metrics</div><div class="note">Uptime</div></div>
+		</div>
+		<div class="color-name">Blue</div>
+	</div>
+	<div class="board-card dark-common c-fra-lavender">
+		<div class="board-head">Creative <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">Inspo</div><div class="note">Colors <span class="link">Dribbble</span></div><div class="note">Type</div></div>
+			<div class="list"><div class="list-title">Projects</div><div class="note raw">Active</div><div class="note">Portfolio</div></div>
+		</div>
+		<div class="color-name">Lavender</div>
+	</div>
+</div>
+
+<div class="section-title">Catppuccin Macchiato (Rich Dark)</div>
+<div class="grid">
+	<div class="board-card dark-common c-mac-rosewater">
+		<div class="board-head">Personal <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">Today</div><div class="note">Groceries</div><div class="note">Call <span class="link">dentist</span></div></div>
+			<div class="list"><div class="list-title">Week</div><div class="note raw">Home</div><div class="note">Fix faucet</div></div>
+		</div>
+		<div class="color-name">Rosewater</div>
+	</div>
+	<div class="board-card dark-common c-mac-pink">
+		<div class="board-head">Marketing <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">Campaigns</div><div class="note">Spring <span class="link">launch</span></div><div class="note">Ads</div></div>
+			<div class="list"><div class="list-title">Analytics</div><div class="note raw">Metrics</div><div class="note">CTR</div></div>
+		</div>
+		<div class="color-name">Pink</div>
+	</div>
+	<div class="board-card dark-common c-mac-mauve">
+		<div class="board-head">Architecture <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">ADRs</div><div class="note">Micro vs <span class="link">mono</span></div><div class="note">DB</div></div>
+			<div class="list"><div class="list-title">Diagrams</div><div class="note raw">System</div><div class="note">Auth</div></div>
+		</div>
+		<div class="color-name">Mauve</div>
+	</div>
+	<div class="board-card dark-common c-mac-peach">
+		<div class="board-head">Content <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">Draft</div><div class="note">Blog: <span class="link">React</span></div><div class="note">Newsletter</div></div>
+			<div class="list"><div class="list-title">Pub</div><div class="note raw">March</div><div class="note">Case study</div></div>
+		</div>
+		<div class="color-name">Peach</div>
+	</div>
+	<div class="board-card dark-common c-mac-green">
+		<div class="board-head">Habits <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">Daily</div><div class="note">Run</div><div class="note">Read</div></div>
+			<div class="list"><div class="list-title">Weekly</div><div class="note raw">Goals</div><div class="note">Meal prep</div></div>
+		</div>
+		<div class="color-name">Green</div>
+	</div>
+	<div class="board-card dark-common c-mac-teal">
+		<div class="board-head">DevOps <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">Infra</div><div class="note">Upgrade <span class="link">k8s</span></div><div class="note">Alerts</div></div>
+			<div class="list"><div class="list-title">Done</div><div class="note raw">Shipped</div><div class="note">CI/CD</div></div>
+		</div>
+		<div class="color-name">Teal</div>
+	</div>
+	<div class="board-card dark-common c-mac-sky">
+		<div class="board-head">Research <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">Reading</div><div class="note">Paper: <span class="link">LLMs</span></div><div class="note">Systems</div></div>
+			<div class="list"><div class="list-title">Notes</div><div class="note raw">Key</div><div class="note">Takeaways</div></div>
+		</div>
+		<div class="color-name">Sky</div>
+	</div>
+	<div class="board-card dark-common c-mac-blue">
+		<div class="board-head">Planning <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">Goals</div><div class="note">Ship <span class="link">X</span></div><div class="note">Debt</div></div>
+			<div class="list"><div class="list-title">KPIs</div><div class="note raw">Metrics</div><div class="note">Uptime</div></div>
+		</div>
+		<div class="color-name">Blue</div>
+	</div>
+	<div class="board-card dark-common c-mac-lavender">
+		<div class="board-head">Creative <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">Inspo</div><div class="note">Colors <span class="link">Dribbble</span></div><div class="note">Type</div></div>
+			<div class="list"><div class="list-title">Projects</div><div class="note raw">Active</div><div class="note">Portfolio</div></div>
+		</div>
+		<div class="color-name">Lavender</div>
+	</div>
+</div>
+
+<div class="section-title">Catppuccin Mocha (Deepest Dark)</div>
+<div class="grid">
+	<div class="board-card dark-common c-moc-rosewater">
+		<div class="board-head">Personal <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">Today</div><div class="note">Groceries</div><div class="note">Call <span class="link">dentist</span></div></div>
+			<div class="list"><div class="list-title">Week</div><div class="note raw">Home</div><div class="note">Fix faucet</div></div>
+		</div>
+		<div class="color-name">Rosewater</div>
+	</div>
+	<div class="board-card dark-common c-moc-pink">
+		<div class="board-head">Marketing <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">Campaigns</div><div class="note">Spring <span class="link">launch</span></div><div class="note">Ads</div></div>
+			<div class="list"><div class="list-title">Analytics</div><div class="note raw">Metrics</div><div class="note">CTR</div></div>
+		</div>
+		<div class="color-name">Pink</div>
+	</div>
+	<div class="board-card dark-common c-moc-mauve">
+		<div class="board-head">Architecture <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">ADRs</div><div class="note">Micro vs <span class="link">mono</span></div><div class="note">DB</div></div>
+			<div class="list"><div class="list-title">Diagrams</div><div class="note raw">System</div><div class="note">Auth</div></div>
+		</div>
+		<div class="color-name">Mauve</div>
+	</div>
+	<div class="board-card dark-common c-moc-peach">
+		<div class="board-head">Content <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">Draft</div><div class="note">Blog: <span class="link">React</span></div><div class="note">Newsletter</div></div>
+			<div class="list"><div class="list-title">Pub</div><div class="note raw">March</div><div class="note">Case study</div></div>
+		</div>
+		<div class="color-name">Peach</div>
+	</div>
+	<div class="board-card dark-common c-moc-green">
+		<div class="board-head">Habits <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">Daily</div><div class="note">Run</div><div class="note">Read</div></div>
+			<div class="list"><div class="list-title">Weekly</div><div class="note raw">Goals</div><div class="note">Meal prep</div></div>
+		</div>
+		<div class="color-name">Green</div>
+	</div>
+	<div class="board-card dark-common c-moc-teal">
+		<div class="board-head">DevOps <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">Infra</div><div class="note">Upgrade <span class="link">k8s</span></div><div class="note">Alerts</div></div>
+			<div class="list"><div class="list-title">Done</div><div class="note raw">Shipped</div><div class="note">CI/CD</div></div>
+		</div>
+		<div class="color-name">Teal</div>
+	</div>
+	<div class="board-card dark-common c-moc-sky">
+		<div class="board-head">Research <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">Reading</div><div class="note">Paper: <span class="link">LLMs</span></div><div class="note">Systems</div></div>
+			<div class="list"><div class="list-title">Notes</div><div class="note raw">Key</div><div class="note">Takeaways</div></div>
+		</div>
+		<div class="color-name">Sky</div>
+	</div>
+	<div class="board-card dark-common c-moc-blue">
+		<div class="board-head">Planning <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">Goals</div><div class="note">Ship <span class="link">X</span></div><div class="note">Debt</div></div>
+			<div class="list"><div class="list-title">KPIs</div><div class="note raw">Metrics</div><div class="note">Uptime</div></div>
+		</div>
+		<div class="color-name">Blue</div>
+	</div>
+	<div class="board-card dark-common c-moc-lavender">
+		<div class="board-head">Creative <span class="menu-dots">+ List</span></div>
+		<div class="lists">
+			<div class="list"><div class="list-title">Inspo</div><div class="note">Colors <span class="link">Dribbble</span></div><div class="note">Type</div></div>
+			<div class="list"><div class="list-title">Projects</div><div class="note raw">Active</div><div class="note">Portfolio</div></div>
+		</div>
+		<div class="color-name">Lavender</div>
+	</div>
+</div>
+
+</div>
+
+</body>
+</html>

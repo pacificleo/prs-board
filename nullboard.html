@@ -340,6 +340,8 @@
 
 	.board .menu:hover {
 		background: #fff;
+		height: auto;
+		z-index: 5;
 	}
 
 	.board .menu a,
@@ -1336,6 +1338,57 @@
 	}
 
 	/*
+	 *	List color palette
+	 */
+	.list.list-color-frost-1  { background: #dae9f1; }
+	.list.list-color-frost-2  { background: #d0e6ee; }
+	.list.list-color-frost-3  { background: #cddfe9; }
+	.list.list-color-frost-4  { background: #d3e8df; }
+	.list.list-color-red      { background: #f0d5d8; }
+	.list.list-color-orange   { background: #f2ddd2; }
+	.list.list-color-yellow   { background: #f5ecd5; }
+	.list.list-color-green    { background: #dde8d6; }
+	.list.list-color-purple   { background: #e4d5e8; }
+
+	/* Color picker in list menu */
+	.board .list .color-picker {
+		display: flex;
+		gap: 5px;
+		flex-wrap: wrap;
+		padding: 6px 4px;
+		margin: 4px 0 0;
+		border-top: 1px solid rgba(0,0,0,0.08);
+	}
+
+	.board .list .color-picker .color-dot {
+		width: 12px;
+		height: 12px;
+		border-radius: 3px;
+		cursor: pointer;
+		border: 2px solid transparent;
+		transition: border-color 150ms;
+	}
+
+	.board .list .color-picker .color-dot:hover {
+		border-color: rgba(0,0,0,0.3);
+	}
+
+	.board .list .color-picker .color-dot.active {
+		border-color: rgba(0,0,0,0.4);
+	}
+
+	.board .list .color-picker .dot-frost-1  { background: #dae9f1; }
+	.board .list .color-picker .dot-frost-2  { background: #d0e6ee; }
+	.board .list .color-picker .dot-frost-3  { background: #cddfe9; }
+	.board .list .color-picker .dot-frost-4  { background: #d3e8df; }
+	.board .list .color-picker .dot-red      { background: #f0d5d8; }
+	.board .list .color-picker .dot-orange   { background: #f2ddd2; }
+	.board .list .color-picker .dot-yellow   { background: #f5ecd5; }
+	.board .list .color-picker .dot-green    { background: #dde8d6; }
+	.board .list .color-picker .dot-purple   { background: #e4d5e8; }
+	.board .list .color-picker .dot-none     { background: #ebebea; border: 2px dashed #bbb; }
+
+	/*
 	 *	Dark mode
 	 */
 	.theme-dark body {
@@ -1354,6 +1407,7 @@
 
 	.theme-dark .board .menu:hover {
 		background: #2f2f2f;
+		height: auto;
 	}
 
 	.theme-dark .board .menu a {
@@ -1565,6 +1619,36 @@
 		border-radius: 6px;
 	}
 
+	/***/
+	.theme-dark .list.list-color-frost-1  { background: #1c2a33; }
+	.theme-dark .list.list-color-frost-2  { background: #1a2830; }
+	.theme-dark .list.list-color-frost-3  { background: #1c2530; }
+	.theme-dark .list.list-color-frost-4  { background: #1a2b26; }
+	.theme-dark .list.list-color-red      { background: #2d1c24; }
+	.theme-dark .list.list-color-orange   { background: #2b2218; }
+	.theme-dark .list.list-color-yellow   { background: #2a2618; }
+	.theme-dark .list.list-color-green    { background: #1e2a1c; }
+	.theme-dark .list.list-color-purple   { background: #251e33; }
+
+	.theme-dark .board .list .color-picker .color-dot.active {
+		border-color: rgba(255,255,255,0.5);
+	}
+
+	.theme-dark .board .list .color-picker .dot-frost-1  { background: #1c2a33; }
+	.theme-dark .board .list .color-picker .dot-frost-2  { background: #1a2830; }
+	.theme-dark .board .list .color-picker .dot-frost-3  { background: #1c2530; }
+	.theme-dark .board .list .color-picker .dot-frost-4  { background: #1a2b26; }
+	.theme-dark .board .list .color-picker .dot-red      { background: #2d1c24; }
+	.theme-dark .board .list .color-picker .dot-orange   { background: #2b2218; }
+	.theme-dark .board .list .color-picker .dot-yellow   { background: #2a2618; }
+	.theme-dark .board .list .color-picker .dot-green    { background: #1e2a1c; }
+	.theme-dark .board .list .color-picker .dot-purple   { background: #251e33; }
+	.theme-dark .board .list .color-picker .dot-none     { background: #252525; border: 2px dashed #555; }
+
+	.theme-dark .board .list .color-picker .color-dot:hover {
+		border-color: rgba(255,255,255,0.4);
+	}
+
 </style>
 
 </head>
@@ -1659,6 +1743,18 @@
 						<a href=# class='mov-list-l half'>&lt; Mo</a><a href=# class='mov-list-r half'>ve &gt;</a>
 						<a href=# class='mov-list-r full'>Move &gt;</a>
 						<a href=# class='add-note'>+ Note</a>
+						<div class=color-picker>
+							<span class="color-dot dot-frost-1" data-color="frost-1"></span>
+							<span class="color-dot dot-frost-2" data-color="frost-2"></span>
+							<span class="color-dot dot-frost-3" data-color="frost-3"></span>
+							<span class="color-dot dot-frost-4" data-color="frost-4"></span>
+							<span class="color-dot dot-red" data-color="red"></span>
+							<span class="color-dot dot-orange" data-color="orange"></span>
+							<span class="color-dot dot-yellow" data-color="yellow"></span>
+							<span class="color-dot dot-green" data-color="green"></span>
+							<span class="color-dot dot-purple" data-color="purple"></span>
+							<span class="color-dot dot-none" data-color=""></span>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -1873,6 +1969,13 @@
 	];
 
 	//
+
+	var boardColors = ['frost-1','frost-2','frost-3','frost-4','red','orange','yellow','green','purple'];
+
+	function randomBoardColor()
+	{
+		return boardColors[ Math.floor(Math.random() * boardColors.length) ];
+	}
 
 	function BoardMeta()
 	{
@@ -2760,6 +2863,7 @@
 	{
 		this.title = title;
 		this.notes = [ ];
+		this.color = randomBoardColor();
 
 		this.addNote = function(text)
 		{
@@ -3260,6 +3364,12 @@
 		var lists = board.querySelector('.lists');
 		var list = document.querySelector('tt .list').cloneNode(true);
 
+		// assign random color to new list
+		var color = randomBoardColor();
+		list.classList.add('list-color-' + color);
+		var activeDot = list.querySelector('.color-dot[data-color="' + color + '"]');
+		if (activeDot) activeDot.classList.add('active');
+
 		list.querySelector('.text').innerHTML = '';
 		list.querySelector('.head').classList.add('brand-new');
 
@@ -3405,6 +3515,10 @@
 		boardEl.querySelectorAll('.list').forEach(function(listEl){
 			var l = board.addList( getText(listEl.querySelector('.head .text')) );
 
+			// preserve list color from DOM
+			var colorMatch = listEl.className.match(/\blist-color-(\S+)/);
+			l.color = colorMatch ? colorMatch[1] : '';
+
 			listEl.querySelectorAll('.note').forEach(function(noteEl){
 				var n = l.addNote( getText(noteEl.querySelector('.text')) );
 				n.raw = noteEl.classList.contains('raw');
@@ -3507,6 +3621,17 @@
 			var l_notes = l.querySelector('.notes');
 
 			setText( l.querySelector('.head .text'), list.title );
+
+			// apply list color
+			var lc = list.color || '';
+			if (lc) {
+				l.classList.add('list-color-' + lc);
+				var activeDot = l.querySelector('.color-dot[data-color="' + lc + '"]');
+				if (activeDot) activeDot.classList.add('active');
+			} else {
+				var noneDot = l.querySelector('.color-dot[data-color=""]');
+				if (noneDot) noneDot.classList.add('active');
+			}
 
 			list.notes.forEach(function(n){
 				var nd = ndiv.cloneNode(true);
@@ -5003,6 +5128,29 @@
 	//
 	delegate(document.querySelector('.wrap'), 'click', '.board .add-list', function(){
 		addList();
+		return false;
+	});
+
+	delegate(document.querySelector('.wrap'), 'click', '.board .color-dot', function(){
+		if (! NB.board) return false;
+
+		var color = this.getAttribute('data-color');
+		var listEl = this.closest('.list');
+		if (! listEl) return false;
+
+		// remove old color class
+		listEl.className = listEl.className.replace(/\blist-color-\S+/g, '').trim();
+
+		// apply new color class
+		if (color) listEl.classList.add('list-color-' + color);
+
+		// update active dot
+		listEl.querySelectorAll('.color-dot').forEach(function(dot){
+			dot.classList.remove('active');
+		});
+		this.classList.add('active');
+
+		saveBoard();
 		return false;
 	});
 
