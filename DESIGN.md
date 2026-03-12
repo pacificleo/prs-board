@@ -103,7 +103,8 @@ Board                      # Board data container
 ```
 {
   title: <string>,
-  notes: [ Note, ... ]
+  notes: [ Note, ... ],
+  color: <string (Nord palette key, e.g. "frost-1", "red", "purple")>
 }
 ```
 
@@ -203,6 +204,26 @@ Each board maintains a history array of up to 50 revision IDs. When a board is s
 | Modals | `#fff` with backdrop blur | — | 12px |
 | Accent color | `#2383e2` (Notion blue) | `#fc2` (gold) | — |
 | Focus ring | `0 0 0 2px #2383e2` | `0 0 0 2px #d4a72c` | — |
+
+#### Per-List Color Palette
+Each list can have its own pastel background color from the **Nord** palette (Frost + Aurora):
+
+| Name | Light | Dark | Source |
+|------|-------|------|--------|
+| Frost 1 (Polar Water) | `#dae9f1` | `#1c2a33` | Nord Frost |
+| Frost 2 (Ice) | `#d0e6ee` | `#1a2830` | Nord Frost |
+| Frost 3 (Arctic) | `#cddfe9` | `#1c2530` | Nord Frost |
+| Frost 4 (Mint) | `#d3e8df` | `#1a2b26` | Nord Frost |
+| Red | `#f0d5d8` | `#2d1c24` | Nord Aurora |
+| Orange | `#f2ddd2` | `#2b2218` | Nord Aurora |
+| Yellow | `#f5ecd5` | `#2a2618` | Nord Aurora |
+| Green | `#dde8d6` | `#1e2a1c` | Nord Aurora |
+| Purple | `#e4d5e8` | `#251e33` | Nord Aurora |
+
+- New lists are auto-assigned a random color
+- Color picker (square dots) available in each list's `≡` dropdown menu
+- Color is stored in `List.color` and persisted with board data
+- "None" option reverts to default list background
 
 #### Typography
 - Base font size: 15px (up from original 11px)

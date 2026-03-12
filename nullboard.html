@@ -766,11 +766,12 @@
 		border-radius: 8px;
 	}
 
-	.crowded .config:hover,
-	.crowded.adjusting .config {
+	.config:hover,
+	.adjusting .config {
 		background: #fff;
-		box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-		border-radius: 8px;
+		box-shadow: 0 2px 12px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.04);
+		border-radius: 10px;
+		padding: 8px 12px;
 	}
 
 	.config a {
@@ -787,6 +788,16 @@
 		padding: 5px;
 		color: #999;
 		position: relative;
+		font-size: 22px;
+		line-height: 1;
+		display: block;
+		width: 28px;
+		height: 28px;
+		text-align: center;
+	}
+
+	.config .teaser:hover {
+		color: #555;
 	}
 
 	.config .teaser i {
@@ -801,8 +812,8 @@
 	}
 
 	.config .bulk {
-		margin-right: 20px;
-		padding: 5px 0 0 22px;
+		margin-right: 0;
+		padding: 5px 0 0 0;
 		transition: opacity 400ms;
 	}
 
@@ -1559,9 +1570,16 @@
 	}
 
 	/***/
-	.theme-dark .config,
-	.theme-dark.crowded .config:hover {
-		background: #191919 !important;
+	.theme-dark .config {
+		background: #191919;
+	}
+
+	.theme-dark .config:hover,
+	.theme-dark.adjusting .config {
+		background: #252525 !important;
+		box-shadow: 0 2px 12px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.06);
+		border-radius: 10px;
+		padding: 8px 12px;
 	}
 
 	.theme-dark .config a {
@@ -1653,20 +1671,8 @@
 
 </head>
 <body>
-	<div class="logo">
-		<a class=site href=https://nullboard.io>Nullboard</a>
-		<i class=alert></i>
-		<div class=bulk>
-			<a href=# class=view-about>About</a>
-			<a href=# class=view-license>License</a>
-			<a href=https://nullboard.io/changes target=_blank class=view-changes>Changes</a>
-			<a href=https://nullboard.io/github  target=_blank>Github</a>
-			<a href=https://nullboard.io/twitter target=_blank>Twitter</a>
-		</div>
-	</div>
-
 	<div class='config no-user-select'>
-		<a href=# class=teaser><i>&equiv;</i><u>&#x2714;</u></a>
+		<a href=# class=teaser><i>&#x2699;</i><u>&#x2714;</u></a>
 		<div class=bulk>
 			<a href=# class=add-board>Add new board...</a>
 
@@ -1699,6 +1705,10 @@
 
 					<a href="#" class="switch-theme break">Use <i>light</i><b>dark</b> theme</a>
 				</div>
+			</div>
+
+			<div class=break>
+				<a href=# class=view-about>About Nullboard</a>
 			</div>
 		</div>
 	</div>
@@ -4281,19 +4291,6 @@
 
 	function setWhatsNew()
 	{
-		var conf = NB.storage.getConfig();
-
-		if (conf.verSeen && conf.verSeen < NB.codeVersion)
-		{
-			document.querySelector('.logo').classList.add('updated');
-			document.querySelector('.logo .alert').innerHTML = "(updated)";
-		}
-
-		var linkEl = document.querySelector('.logo .view-changes');
-		var link = linkEl.getAttribute('href') + '/?have=' + NB.codeVersion;
-		if (conf.verSeen) link += '&seen=' + conf.verSeen;
-		if (conf.verLast) link += '&last=' + conf.verLast;
-		linkEl.setAttribute('href', link);
 	}
 
 	/*
@@ -5352,26 +5349,11 @@
 			hideOverlay();
 	});
 
-	document.querySelector('.view-about').addEventListener('click', function(){
+	document.querySelector('.config .view-about').addEventListener('click', function(){
 		var div = document.querySelector('tt .about').cloneNode(true);
 		div.querySelector('div').innerHTML = `Version ${NB.codeVersion}`;
 		showOverlay(div);
 		return false;
-	});
-
-	document.querySelector('.view-license').addEventListener('click', function(){
-
-		var div = document.querySelector('tt .license').cloneNode(true);
-		div.innerHTML = formatLicense();
-		showOverlay(div);
-		return false;
-	});
-
-	document.querySelector('.view-changes').addEventListener('click', function(){
-		if (! document.querySelector('.logo').classList.contains('updated'))
-			return;
-		NB.storage.setVerSeen();
-		document.querySelector('.logo').classList.remove('updated');
 	});
 
 	/***/
