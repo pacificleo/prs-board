@@ -512,32 +512,8 @@
 	/***/
 	.board .head .text a,
 	.board .note .text a {
-		color: inherit;
-		cursor: default;
-		transition: none;
-	}
-
-	@keyframes whoomp {
-		0%   { color: inherit; }
-		30%  { color: #888;    }
-		100% { color: inherit; }
-	}
-
-	.board .head .text a:hover,
-	.board .note .text a:hover {
-		animation-name: whoomp;
-		animation-duration: 700ms;
-	}
-
-	.reveal .board .head .text a,
-	.reveal .board .note .text a {
 		color: #1489db;
 		cursor: pointer;
-	}
-
-	.reveal .board .head .text a:hover,
-	.reveal .board .note .text a:hover {
-		animation-name: none;
 	}
 
 	/***/
@@ -1383,8 +1359,8 @@
 		text-shadow: 0 0 4px #0008;
 	}
 
-	.theme-dark .reveal .board .head .text a,
-	.theme-dark .reveal .board .note .text a {
+	.theme-dark .board .head .text a,
+	.theme-dark .board .note .text a {
 		color: #fc0;
 	}
 
@@ -4299,15 +4275,6 @@
 	}
 
 	//
-	function setRevealState(ev)
-	{
-		var do_reveal = ev.getModifierState && (ev.getModifierState( 'CapsLock' ) || ev.getModifierState( 'Control' ));
-
-		if (do_reveal) document.body.classList.add('reveal');
-		else           document.body.classList.remove('reveal');
-	}
-
-	//
 	function showDing()
 	{
 		document.body.classList.add('ding');
@@ -4776,17 +4743,7 @@
 	/*
 	 *	event handlers
 	 */
-	window.addEventListener('blur', function(){
-		document.body.classList.remove('reveal');
-	});
-
-	document.addEventListener('keydown', function(ev){
-		setRevealState(ev);
-	});
-
 	document.addEventListener('keyup', function(ev){
-
-		setRevealState(ev);
 
 		if (ev.target.nodeName == 'TEXTAREA' ||
 		    ev.target.nodeName == 'INPUT')
@@ -4821,10 +4778,6 @@
 	});
 
 	delegate(document.querySelector('.wrap'), 'click', '.board .note .text a', function(ev){
-
-		if (! document.body.classList.contains('reveal'))
-			return true;
-
 		ev.stopPropagation();
 		return true;
 	});
@@ -5078,7 +5031,6 @@
 	});
 
 	document.addEventListener('mousemove', function(ev){
-		setRevealState(ev);
 		NB.noteDrag.onMouseMove(ev);
 		NB.loadDrag.onMouseMove(ev);
 		NB.varAdjust.onMouseMove(ev);
