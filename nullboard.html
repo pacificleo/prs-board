@@ -130,10 +130,10 @@
 	html {
 		--ff: f-barlow, sans-serif;
 
-		--fs: 11;                        /* font-size   */
-		--lh: calc( var(--fs) * 1.25 );  /* line-height */
-		--fs-head: 13.6;                 /* font-size of board heading */
-		--fs-nops: 9;                    /* font-size of the note ops */
+		--fs: 15;                        /* font-size   */
+		--lh: calc( var(--fs) * 1.35 );  /* line-height */
+		--fs-head: 17;                   /* font-size of board heading */
+		--fs-nops: 11;                   /* font-size of the note ops */
 		--lw: calc(20 * var(--fs) + 30); /* .list width */
 	}
 
@@ -146,33 +146,33 @@
 	/***/
 	html.f-ibm-plex {
 		--ff: f-ibm-plex, sans-serif;
-		--fs: 11;
-		--fs-head: 12.5;
+		--fs: 15;
+		--fs-head: 17;
 		--lw: calc(20 * var(--fs) + 40);  /* .list width */
 	}
 
 	/***/
 	html.f-open-sans {
 		--ff: f-open-sans, sans-serif;
-		--fs: 11;
-		--fs-head: 12.5;
+		--fs: 15;
+		--fs-head: 17;
 		--lw: calc(20 * var(--fs) + 50);  /* .list width */
 	}
 
 	/***/
 	html.f-segoe-ui {
 		--ff: f-segoe-ui, sans-serif;
-		--fs: 11;
-		--fs-head: 13;
-		--fs-nops: 8;
+		--fs: 15;
+		--fs-head: 17;
+		--fs-nops: 10;
 		--lw: calc(22 * var(--fs) + 40);  /* .list width */
 	}
 
 	/***/
 	html.f-maven-pro {
 		--ff: f-maven-pro, sans-serif;
-		--fs: 12;
-		--fs-head: 13;
+		--fs: 16;
+		--fs-head: 18;
 		--lw: calc(20 * var(--fs) + 47);  /* .list width */
 	}
 
@@ -184,7 +184,7 @@
 
 	body {
 		background: #fff;
-		background: #f8f9fb;
+		background: #f5f5f4;
 	}
 
 	/***/
@@ -277,13 +277,13 @@
 		top: 2px;
 		font-size: calc(16rem / 11);
 		line-height: calc(10 / 17);
-		font-weight: 400;
+		font-weight: 700;
 	}
 
 	/***/
 	.board .head {
-		padding: 5px 0;
-		margin: 1px 5px 0;
+		padding: 6px 4px;
+		margin: 1px 6px 0;
 		position: relative;
 	}
 
@@ -311,7 +311,7 @@
 		font-size: calc(10rem / 11);
 		line-height: calc(22 / 10);
 		text-transform: uppercase;
-		color: #1489db;
+		color: #2383e2;
 		opacity: 0.8;
 	}
 
@@ -321,7 +321,9 @@
 
 	.board .head.editing .edit {
 		display: block;
-		outline: 1px solid #8eaedd;
+		outline: none;
+		border-radius: 6px;
+		box-shadow: 0 0 0 2px #2383e2;
 	}
 
 	.board .menu {
@@ -329,15 +331,22 @@
 		top: 0;
 		right: 0;
 		height: 20px;
-		padding: 5px 6px 7px 30px;
-		background: linear-gradient(to right, #EAEDF000, #EAEDF0 10px);
+		padding: 8px 10px 7px 6px;
+		background: transparent;
 		line-height: calc(20 / 11);
+		border-radius: 8px;
+		transition: background 200ms;
+	}
+
+	.board .menu:hover {
+		background: #fff;
 	}
 
 	.board .menu a,
 	.board .ops  a {
 		color: #000000A0;
 		transition: color 200ms;
+		font-weight: 600;
 	}
 
 	.board .menu a {
@@ -364,11 +373,12 @@
 	}
 
 	.board > .head {
-		background: #EAEDF0;
-		padding: 5px;
-		margin: 0 0 10px;
-		border-radius: 2px;
+		background: #fff;
+		padding: 8px 10px;
+		margin: 0 0 14px;
+		border-radius: 10px;
 		position: relative;
+		box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 0 1px rgba(0,0,0,0.06);
 	}
 
 	.board > .head .menu {
@@ -398,9 +408,9 @@
 		display: inline-block;
 		vertical-align: top;
 		width: calc( var(--lw) * 1px );
-		margin: 0 5px 10px;
-		background: linear-gradient(#EAEDF0 30px, #DDE1E5 90px);
-		border-radius: 2px;
+		margin: 0 6px 12px;
+		background: #ebebea;
+		border-radius: 10px;
 	}
 
 	.board .list::-webkit-scrollbar {
@@ -416,7 +426,7 @@
 	}
 
 	.board .list .notes {
-		padding: 0 5px;
+		padding: 0 8px 4px;
 	}
 
 	/***/
@@ -469,18 +479,22 @@
 	/***/
 	.board .note {
 		background: #fff;
-		margin-top: 5px;
-		box-shadow: 0 1px 2px #bbb, 0 0 1px #ddd;
+		margin-top: 6px;
+		box-shadow: 0 1px 2px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.04);
+		border-radius: 8px;
 		position: relative;
+		transition: box-shadow 200ms;
+	}
+
+	.board .note:hover {
+		box-shadow: 0 2px 8px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04);
 	}
 
 	.board .note.dragging,
 	.board .note.dragging.raw {
-		background: #CED4DA;
-		box-shadow: 0 +1px 0 #0001 inset,
-		            0 -1px 0 #0001 inset,
-		            +1px 0 0 #0001 inset,
-		            -1px 0 0 #0001 inset;
+		background: #e8e8e6;
+		border-radius: 8px;
+		box-shadow: 0 0 0 1px rgba(0,0,0,0.06) inset;
 	}
 
 	.board .note.dragging * {
@@ -493,12 +507,12 @@
 	}
 
 	.board .note {
-		padding-bottom: 6px;
+		padding-bottom: 8px;
 	}
 
 	.board .note .text,
 	.board .note .edit {
-		padding: 5px 10px 0;
+		padding: 8px 12px 0;
 		margin-right: 15px;
 		min-height: 100%;
 	}
@@ -512,8 +526,16 @@
 	/***/
 	.board .head .text a,
 	.board .note .text a {
-		color: #1489db;
+		color: #2383e2;
 		cursor: pointer;
+		text-decoration: underline;
+		text-decoration-color: rgba(35,131,226,0.3);
+		text-underline-offset: 2px;
+	}
+
+	.board .head .text a:hover,
+	.board .note .text a:hover {
+		text-decoration-color: rgba(35,131,226,0.8);
 	}
 
 	/***/
@@ -524,7 +546,9 @@
 
 	.board .note.editing {
 		box-shadow: none;
-		outline: 1px solid #8eaedd;
+		outline: none;
+		border-radius: 8px;
+		box-shadow: 0 0 0 2px #2383e2;
 	}
 
 	.board .note.editing .text {
@@ -564,17 +588,19 @@
 
 	.board .note .ops .teaser:before {
 		content: '\2261';
+		font-weight: 700;
 	}
 
 	.board .note .ops .bulk {
 		display: none;
 		background: #fff;
 		border-left: none;
-		padding: 1px 0 2px 5px;
+		padding: 2px 4px 3px 6px;
 		font-size: calc( var(--fs-nops) * 1px );
-		font-weight: 500;
-		border-left: 1px solid #ddd;
-		border-bottom: 1px solid #ddd;
+		font-weight: 600;
+		border-left: 1px solid #e8e8e6;
+		border-bottom: 1px solid #e8e8e6;
+		border-radius: 0 0 0 8px;
 	}
 
 	.board .note .ops .bulk a {
@@ -598,6 +624,7 @@
 
 	.board .note.raw.editing {
 		background: #fff;
+		border-radius: 8px;
 	}
 
 	.board .note.raw .text {
@@ -641,13 +668,10 @@
 		white-space: pre-wrap;
 		cursor: move;
 
-		padding: 5px 25px 6px 10px;
+		padding: 8px 25px 8px 12px;
+		border-radius: 8px;
 
-		box-shadow: 0 +1px 0 #ACB4BC inset,
-		            0 -1px 0 #ACB4BC inset,
-		            +1px 0 0 #ACB4BC inset,
-		            -1px 0 0 #ACB4BC inset,
-		            0px 1px 3px #00000030;
+		box-shadow: 0 4px 16px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.06);
 	}
 
 	.note-dragster a {
@@ -663,12 +687,14 @@
 		padding: 6px 12px;
 		z-index: 3;
 		opacity: 0.6;
-		background: #f8f9fb;
+		background: #f5f5f4;
+		border-radius: 8px;
 	}
 
 	.crowded .logo:hover {
 		background: #fff;
-		box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+		box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+		border-radius: 8px;
 	}
 
 	.logo:hover {
@@ -701,7 +727,7 @@
 	}
 
 	.logo .bulk a:hover {
-		color: #1489db;
+		color: #2383e2;
 	}
 
 	.logo .bulk a {
@@ -734,13 +760,15 @@
 		right: 21px;
 		line-height: calc(19 / 11);
 		z-index: 3;
-		background: #f8f9fb;
+		background: #f5f5f4;
+		border-radius: 8px;
 	}
 
 	.crowded .config:hover,
 	.crowded.adjusting .config {
 		background: #fff;
-		box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+		box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+		border-radius: 8px;
 	}
 
 	.config a {
@@ -750,7 +778,7 @@
 	}
 
 	.config a:hover {
-		color: #1489db;
+		color: #2383e2;
 	}
 
 	.config .teaser {
@@ -792,7 +820,7 @@
 	}
 
 	.config .bulk .boards a.load-board.active {
-		color: #1489db;
+		color: #2383e2;
 	}
 
 	.config .bulk .boards a.load-board.active:before {
@@ -807,8 +835,8 @@
 	}
 
 	.config .bulk .boards a.load-board.dragging {
-		background: #DDE1E5;
-		border-radius: 2px;
+		background: #ebebea;
+		border-radius: 6px;
 		color: transparent;
 		transition: none;
 		box-shadow: 0 0 1px #0002 inset;
@@ -826,10 +854,10 @@
 		padding-left: 5px;
 		background: #fff;
 		color: #000;
-		border-radius: 2px;
+		border-radius: 6px;
 		cursor: move;
 		outline: 1px solid #ACB4BC;
-		box-shadow: 0px 1px 3px #00000030;
+		box-shadow: 0 4px 12px rgba(0,0,0,0.12);
 	}
 
 	.config .bulk a i,
@@ -983,7 +1011,7 @@
 	.fs-set .config .bulk .ui-prefs .f-prefs tr.ui-fs td.val,
 	.lh-set .config .bulk .ui-prefs .f-prefs tr.ui-lh td.val,
 	.lw-set .config .bulk .ui-prefs .f-prefs tr.ui-lw td.val {
-		color: #1489db;
+		color: #2383e2;
 		cursor: pointer;
 	}
 
@@ -1046,7 +1074,8 @@
 		left: 0;
 		width: 100%;
 		height: 100%;
-		background: rgba(0,0,0,0.9);
+		background: rgba(0,0,0,0.6);
+		backdrop-filter: blur(4px);
 		color: #000;
 
 		display: none; /* flex */
@@ -1059,8 +1088,8 @@
 		background: #fff;
 		align-self: start;
 		margin-top: 100px;
-		border-radius: 1px;
-		box-shadow: 0 2px 6px #000;
+		border-radius: 12px;
+		box-shadow: 0 8px 32px rgba(0,0,0,0.2), 0 0 0 1px rgba(0,0,0,0.06);
 	}
 
 	/***/
@@ -1073,7 +1102,7 @@
 	}
 
 	.overlay > div.license a {
-		color: #1489db;
+		color: #2383e2;
 	}
 
 	.overlay > div.license span {
@@ -1096,7 +1125,7 @@
 
 	.overlay > div.about a {
 		display: block;
-		color: #1489db;
+		color: #2383e2;
 	}
 
 	.overlay > div.about div {
@@ -1152,7 +1181,7 @@
 	}
 
 	.overlay .backup-conf .what a {
-		color: #1489db;
+		color: #2383e2;
 	}
 
 	.overlay .backup-conf .opt {
@@ -1176,7 +1205,7 @@
 		top: 1px;
 		background: var(--col);
 		border: 1px solid var(--col);
-		border-radius: 1px;
+		border-radius: 3px;
 		box-shadow: 0 2px 0 #fff inset, 0 -2px 0 #fff inset, 2px 0 0 #fff inset, -2px 0 0 #fff inset;
 	}
 
@@ -1189,7 +1218,7 @@
 	}
 
 	.overlay .backup-conf .opt:hover {
-		color: #1489db;
+		color: #2383e2;
 	}
 
 	.overlay .backup-conf .opt {
@@ -1217,14 +1246,16 @@
 	.overlay .backup-conf .etc input {
 		display: inline-block;
 		width: 170px;
-		padding: 0 5px;
+		padding: 2px 8px;
 		line-height: calc(20 / 11);
 		margin-bottom: 3px;
-		border: 1px solid #ccc;
+		border: 1px solid #ddd;
+		border-radius: 6px;
 	}
 
 	.overlay .backup-conf .etc input:focus {
-		border-bottom: 1px solid #888;
+		border: 1px solid #2383e2;
+		box-shadow: 0 0 0 2px rgba(35,131,226,0.2);
 	}
 
 	.overlay .backup-conf .etc input::placeholder {
@@ -1263,7 +1294,7 @@
 	}
 
 	.overlay .backup-conf .save a {
-		color: #1489db;
+		color: #2383e2;
 	}
 
 	.overlay .backup-conf.off .save .check {
@@ -1308,17 +1339,21 @@
 	 *	Dark mode
 	 */
 	.theme-dark body {
-		background: #09090A;
+		background: #191919;
 		color: #d6d6d6;
 	}
 
 	.theme-dark .board .head {
-		background: #17171a;
+		background: #252525;
 	}
 
 	/***/
 	.theme-dark .board .menu {
-		background: linear-gradient(to right, #17171a00, #17171a 10px);
+		background: transparent;
+	}
+
+	.theme-dark .board .menu:hover {
+		background: #2f2f2f;
 	}
 
 	.theme-dark .board .menu a {
@@ -1344,19 +1379,22 @@
 	}
 
 	.theme-dark .board > .head {
-		box-shadow: 0 0 2px #fff1 inset;
+		box-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.04);
 	}
 
 	/***/
 	.theme-dark .board .list {
-		background: #17171a;
-		box-shadow: 0 0 2px #fff1 inset;
+		background: #252525;
 	}
 
 	.theme-dark .board .note {
-		background: linear-gradient(#242426, #202022);
-		box-shadow: 0 1px 3px #000a;
-		text-shadow: 0 0 4px #0008;
+		background: #2f2f2f;
+		box-shadow: 0 1px 2px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.04);
+		text-shadow: none;
+	}
+
+	.theme-dark .board .note:hover {
+		box-shadow: 0 2px 8px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.06);
 	}
 
 	.theme-dark .board .head .text a,
@@ -1383,7 +1421,7 @@
 
 	.theme-dark .board .note.raw .text {
 		color: #eee;
-		text-shadow: 0 0 4px #0008;
+		text-shadow: none;
 	}
 
 	.theme-dark .board .note .ops .teaser {
@@ -1391,9 +1429,10 @@
 	}
 
 	.theme-dark .board .note .ops .bulk {
-		background: #202022;
-		border-left: 1px solid #111;
-		border-bottom: 1px solid #111;
+		background: #2f2f2f;
+		border-left: 1px solid #3a3a3a;
+		border-bottom: 1px solid #3a3a3a;
+		border-radius: 0 0 0 8px;
 	}
 
 	.theme-dark .board .note.raw .ops .bulk {
@@ -1411,14 +1450,16 @@
 	/***/
 	.theme-dark .board .note.dragging,
 	.theme-dark .board .note.dragging.raw {
-	    background: #09090A;
-	    outline: 1px solid #fff2;
+	    background: #1e1e1e;
+	    outline: 1px solid rgba(255,255,255,0.06);
+	    border-radius: 8px;
 	}
 
 	.theme-dark .note-dragster {
-		box-shadow: 0px 1px 4px #000;
-		background: linear-gradient(#242426, #202022);
+		box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+		background: #2f2f2f;
 		outline: 1px solid #fc28;
+		border-radius: 8px;
 	}
 
 	.theme-dark .note-dragster a {
@@ -1428,17 +1469,21 @@
 	/***/
 	.theme-dark .wrap textarea,
 	.theme-dark .wrap input {
-		background: #111315;
+		background: #1e1e1e;
 		color: #eee;
 	}
 
 	.theme-dark .board .head.editing .edit {
-		outline: 1px solid #bc9908;
+		outline: none;
+		box-shadow: 0 0 0 2px #d4a72c;
+		border-radius: 6px;
 	}
 
 	.theme-dark .board .note.editing {
-		background: #111315;
-		outline: 1px solid #bc9908;
+		background: #1e1e1e;
+		outline: none;
+		box-shadow: 0 0 0 2px #d4a72c;
+		border-radius: 8px;
 	}
 
 	/***/
@@ -1448,7 +1493,7 @@
 
 	.theme-dark .logo,
 	.theme-dark.crowded .logo:hover {
-		background: #09090A !important;
+		background: #191919 !important;
 	}
 
 	.theme-dark .logo a:hover {
@@ -1462,7 +1507,7 @@
 	/***/
 	.theme-dark .config,
 	.theme-dark.crowded .config:hover {
-		background: #09090A !important;
+		background: #191919 !important;
 	}
 
 	.theme-dark .config a {
@@ -1507,15 +1552,17 @@
 	/***/
 	.theme-dark .config .bulk .boards .load-board.dragging,
 	.theme-dark .config .bulk .boards .load-board.active.dragging {
-		background: #fff2;
+		background: rgba(255,255,255,0.06);
 		color: transparent;
+		border-radius: 6px;
 	}
 
 	.theme-dark .load-dragster {
-		background: #09090A;
-		box-shadow: 0px 2px 4px #000;
+		background: #252525;
+		box-shadow: 0 4px 12px rgba(0,0,0,0.4);
 		outline: 1px solid #fc2a;
 		color: #ddd;
+		border-radius: 6px;
 	}
 
 </style>
