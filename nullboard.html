@@ -4527,7 +4527,18 @@
 		if (via_escape)
 		{
 			if (brand_new)
+			{
 				item.closest('.note, .list, .board').remove();
+				return;
+			}
+			if (text_now != text_was && !confirm('Discard changes?'))
+			{
+				item.classList.add('editing');
+				if (item._collapsed)
+					item.classList.remove('collapsed');
+				edit.focus();
+				return;
+			}
 			return;
 		}
 
