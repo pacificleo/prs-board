@@ -24,7 +24,7 @@ Nullboard is a minimalist, offline-first kanban board / task list manager delive
 | Layer       | Technology                         |
 |-------------|------------------------------------|
 | Language    | HTML5, CSS3, JavaScript (ES6+)     |
-| Library     | jQuery 3.6.0                       |
+| Libraries   | None (zero dependencies)           |
 | Storage     | Browser localStorage               |
 | Data format | JSON                               |
 | Fonts       | Barlow, IBM Plex Sans, Open Sans, Maven Pro, Segoe UI (WOFF) |
@@ -41,7 +41,6 @@ prs-board/
 ├── README.md                   # Project documentation
 ├── LICENSE                     # License
 ├── extras/                     # Static assets
-│   ├── jquery-3.6.0.min.js     # jQuery (with CDN fallback)
 │   ├── *.woff                  # Font files (Barlow, IBM Plex, Open Sans, Maven Pro)
 │   └── favicon-16.png          # Favicon
 └── images/                     # Screenshots and demo GIFs
@@ -131,7 +130,7 @@ Stored in `localStorage` as `nullboard.config`:
 ```
 User Action (click, drag, edit)
          |
-    DOM Event Handler (jQuery)
+    DOM Event Handler (vanilla JS)
          |
     Model Update (Board/List/Note objects)
          |
@@ -145,7 +144,7 @@ User Action (click, drag, edit)
     +-- Store metadata:    localStorage['nullboard.board.{id}.meta']
     +-- Trigger backup (if configured)
          |
-    SimpleBackup agents (async, queued)
+    SimpleBackup agents (async, queued via fetch API)
          |
     HTTP PUT to backup agent endpoints
 ```
@@ -258,9 +257,13 @@ No build step is required. Deployment options:
 
 ## JavaScript Patterns
 
+- **Zero dependencies** - all DOM manipulation uses vanilla JS (no jQuery or other libraries)
 - **ES6 classes** for Storage, BackupStorage, and SimpleBackup
 - **Prototypal patterns** for UI classes (Drag2, VarAdjust)
-- **jQuery** for DOM manipulation, event handling, and AJAX
-- **Template cloning** from `<tt>` elements for dynamic UI generation
+- **Native DOM APIs** - `querySelector`/`querySelectorAll`, `classList`, `addEventListener`
+- **Custom `delegate()` helper** for event delegation (replaces jQuery's `.on(event, selector, fn)`)
+- **Promise-based animation helpers** - `animateEl()`, `slideUp()`, `slideDown()` using CSS transitions and `requestAnimationFrame`
+- **`fetch()` API** for backup agent HTTP communication
+- **Template cloning** from `<tt>` elements via `cloneNode(true)` for dynamic UI generation
 - **Async queue** pattern for backup request batching
 - **Object.assign()** for object composition and config merging
