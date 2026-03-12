@@ -342,6 +342,7 @@
 		background: #fff;
 		height: auto;
 		z-index: 5;
+		box-shadow: 0 2px 8px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.06);
 	}
 
 	.board .menu a,
@@ -383,6 +384,11 @@
 		box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 0 1px rgba(0,0,0,0.06);
 	}
 
+	.board .list .head .text,
+	.board .list .head .edit {
+		font-size: calc( var(--fs-head) / 13 * 1rem );
+	}
+
 	.board > .head .menu {
 		margin-right: 5px;
 	}
@@ -413,7 +419,7 @@
 		margin: 0 6px 12px;
 		background: #ebebea;
 		border-radius: 10px;
-		box-shadow: 0 2px 12px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.04);
+		box-shadow: 0 2px 10px rgba(0,0,0,0.14), 0 0 0 1px rgba(0,0,0,0.05);
 	}
 
 	.board .list::-webkit-scrollbar {
@@ -599,18 +605,18 @@
 
 	.board .note .ops .bulk {
 		display: none;
-		background: #fff;
+		background: #f0f0ee;
 		border-left: none;
 		padding: 2px 4px 3px 6px;
 		font-size: calc( var(--fs-nops) * 1px );
 		font-weight: 600;
-		border-left: 1px solid #e8e8e6;
-		border-bottom: 1px solid #e8e8e6;
+		border-left: 1px solid #e0e0de;
+		border-bottom: 1px solid #e0e0de;
 		border-radius: 0 0 0 8px;
 	}
 
 	.board .note .ops .bulk a {
-		padding-right: 4px;
+		padding: 2px 6px;
 	}
 
 	.board .note .ops:hover .bulk {
@@ -1847,9 +1853,9 @@
 				<a href=# class=teaser></a>
 				<div class=bulk>
 					<a href=# class='done-note'>&#x2713;</a>
-					<a href=# class='del-note warn'>X</a>
-					<a href=# class='raw-note'>R</a>
-					<a href=# class='collapse'>_</a>
+					<a href=# class='del-note warn'>&#x2715;</a>
+					<a href=# class='raw-note'>&#xA7;</a>
+					<a href=# class='collapse'>&#x2015;</a>
 				</div>
 			</div>
 			<div class=text> </div>
@@ -3428,6 +3434,14 @@
 		note.querySelector('.text').click();
 	}
 
+	function updateDividerCount(notes)
+	{
+		var divider = notes.querySelector('.completed-divider');
+		if (!divider) return;
+		var count = notes.querySelectorAll('.note.done').length;
+		setText( divider.querySelector('.text'), 'Completed (' + count + ')' );
+	}
+
 	function deleteNote(note)
 	{
 		animateEl(note, { opacity: '0' }, 200).then(function(){
@@ -3749,7 +3763,7 @@
 			if (doneNotes.length) {
 				var divider = ndiv.cloneNode(true);
 				divider.classList.add('raw', 'completed-divider');
-				setText( divider.querySelector('.text'), 'Completed' );
+				setText( divider.querySelector('.text'), 'Completed (' + doneNotes.length + ')' );
 				if (list.completedMin) divider.classList.add('section-collapsed');
 				l_notes.appendChild(divider);
 
@@ -4767,6 +4781,8 @@
 						}
 						if (!notes.querySelector('.note.done')) {
 							divider.remove();
+						} else {
+							updateDividerCount(notes);
 						}
 					}
 					else if (note.classList.contains('done'))
@@ -5340,9 +5356,10 @@
 			var divider = notes.querySelector('.completed-divider');
 			if (divider) {
 				notes.insertBefore(note, divider);
-				// hide divider if no more done notes
 				if (!notes.querySelector('.note.done')) {
 					divider.remove();
+				} else {
+					updateDividerCount(notes);
 				}
 			}
 		} else {
@@ -5353,10 +5370,10 @@
 				var ndiv = document.querySelector('tt .note');
 				divider = ndiv.cloneNode(true);
 				divider.classList.add('raw', 'completed-divider');
-				setText( divider.querySelector('.text'), 'Completed' );
 				notes.appendChild(divider);
 			}
 			notes.appendChild(note);
+			updateDividerCount(notes);
 		}
 		saveBoard();
 		return false;
