@@ -184,8 +184,7 @@ Each board maintains a history array of up to 50 revision IDs. When a board is s
 
 ### Link Recognition
 - Detects `http://` and `https://` URLs in note text
-- Hold CapsLock or Ctrl to reveal clickable links
-- Right-click context menu for link operations
+- Links are always visible and left-clickable
 
 ### Theming
 - Light and dark themes via CSS class switching
