@@ -545,6 +545,9 @@
 	.board .note .edit {
 		display: none;
 		border: none;
+		box-sizing: border-box;
+		width: 100%;
+		border-radius: 8px;
 	}
 
 	.board .note.editing {
@@ -631,6 +634,49 @@
 	}
 
 	.board .note.raw .text {
+	}
+
+	/***/
+	.board .note.done .text {
+		text-decoration: line-through;
+		opacity: 0.5;
+	}
+
+	.board .note.done {
+		opacity: 0.7;
+	}
+
+	.board .note.done:hover {
+		opacity: 1;
+	}
+
+	.board .note.completed-divider {
+		background: transparent;
+		box-shadow: none;
+		font-weight: 500;
+		border-top: 1px solid rgba(0,0,0,0.1);
+		border-radius: 0;
+		margin-top: 10px;
+		padding-top: 4px;
+	}
+
+	.board .note.completed-divider .text {
+		opacity: 0.5;
+		font-size: 0.85em;
+	}
+
+	.board .note.section-collapsed ~ .note.done {
+		display: none;
+	}
+
+	.board .note.completed-divider .ops .bulk .del-note,
+	.board .note.completed-divider .ops .bulk .raw-note,
+	.board .note.completed-divider .ops .bulk .done-note {
+		display: none;
+	}
+
+	.board .note.done .ops .bulk .done-note {
+		color: #2e8b57;
 	}
 
 	/***/
@@ -1519,6 +1565,18 @@
 	}
 
 	/***/
+	.theme-dark .board .note.completed-divider {
+		border-top-color: rgba(255,255,255,0.1);
+	}
+
+	.theme-dark .board .note.completed-divider .text {
+		color: #aaa;
+	}
+
+	.theme-dark .board .note.done .ops .bulk .done-note {
+		color: #5cb85c;
+	}
+
 	.theme-dark .board .note.dragging,
 	.theme-dark .board .note.dragging.raw {
 	    background: #1e1e1e;
@@ -1788,6 +1846,7 @@
 			<div class=ops>
 				<a href=# class=teaser></a>
 				<div class=bulk>
+					<a href=# class='done-note'>&#x2713;</a>
 					<a href=# class='del-note warn'>X</a>
 					<a href=# class='raw-note'>R</a>
 					<a href=# class='collapse'>_</a>
@@ -2879,6 +2938,7 @@
 		this.text = text;
 		this.raw  = false;
 		this.min  = false;
+		this.done = false;
 	}
 
 	function List(title)
@@ -2886,6 +2946,7 @@
 		this.title = title;
 		this.notes = [ ];
 		this.color = randomBoardColor();
+		this.completedMin = false;
 
 		this.addNote = function(text)
 		{
@@ -3353,9 +3414,15 @@
 		}
 		else
 		{
-			notes.appendChild(note);
-			var allNotes = notes.querySelectorAll('.note');
-			note = allNotes[allNotes.length - 1];
+			var divider = notes.querySelector('.completed-divider');
+			if (divider) {
+				notes.insertBefore(note, divider);
+				note = divider.previousElementSibling;
+			} else {
+				notes.appendChild(note);
+				var allNotes = notes.querySelectorAll('.note');
+				note = allNotes[allNotes.length - 1];
+			}
 		}
 
 		note.querySelector('.text').click();
@@ -3541,10 +3608,16 @@
 			var colorMatch = listEl.className.match(/\blist-color-(\S+)/);
 			l.color = colorMatch ? colorMatch[1] : '';
 
+			// preserve completed section collapse state
+			var divider = listEl.querySelector('.note.completed-divider');
+			l.completedMin = divider ? divider.classList.contains('section-collapsed') : false;
+
 			listEl.querySelectorAll('.note').forEach(function(noteEl){
+				if (noteEl.classList.contains('completed-divider')) return;
 				var n = l.addNote( getText(noteEl.querySelector('.text')) );
 				n.raw = noteEl.classList.contains('raw');
 				n.min = noteEl.classList.contains('collapsed');
+				n.done = noteEl.classList.contains('done');
 			});
 		});
 
@@ -3655,13 +3728,33 @@
 				if (noneDot) noneDot.classList.add('active');
 			}
 
+			var pendingNotes = [];
+			var doneNotes = [];
+
 			list.notes.forEach(function(n){
 				var nd = ndiv.cloneNode(true);
 				setText( nd.querySelector('.text'), n.text );
 				if (n.raw) nd.classList.add('raw');
 				if (n.min) nd.classList.add('collapsed');
-				l_notes.appendChild(nd);
+				if (n.done) {
+					nd.classList.add('done');
+					doneNotes.push(nd);
+				} else {
+					pendingNotes.push(nd);
+				}
 			});
+
+			pendingNotes.forEach(function(nd){ l_notes.appendChild(nd); });
+
+			if (doneNotes.length) {
+				var divider = ndiv.cloneNode(true);
+				divider.classList.add('raw', 'completed-divider');
+				setText( divider.querySelector('.text'), 'Completed' );
+				if (list.completedMin) divider.classList.add('section-collapsed');
+				l_notes.appendChild(divider);
+
+				doneNotes.forEach(function(nd){ l_notes.appendChild(nd); });
+			}
 
 			b_lists.appendChild(l);
 		});
@@ -4387,8 +4480,6 @@
 		note.classList.remove('collapsed');
 
 		edit.value = getText(textEl);
-		edit.style.width = textEl.offsetWidth + 'px';
-
 		edit.style.height = textEl.offsetHeight + 'px';
 		note.classList.add('editing');
 
@@ -4658,6 +4749,32 @@
 			}
 			else
 			{
+				// update done state based on position relative to completed divider
+				var notes = note.closest('.notes');
+				if (notes && !note.classList.contains('completed-divider'))
+				{
+					var divider = notes.querySelector('.completed-divider');
+					if (divider)
+					{
+						var isAfterDivider = false;
+						for (var s = note.previousElementSibling; s; s = s.previousElementSibling) {
+							if (s.classList.contains('completed-divider')) { isAfterDivider = true; break; }
+						}
+						if (isAfterDivider && !note.classList.contains('done')) {
+							note.classList.add('done');
+						} else if (!isAfterDivider && note.classList.contains('done')) {
+							note.classList.remove('done');
+						}
+						if (!notes.querySelector('.note.done')) {
+							divider.remove();
+						}
+					}
+					else if (note.classList.contains('done'))
+					{
+						note.classList.remove('done');
+					}
+				}
+
 				if (this.org_loc != noteLocation(note))
 					saveBoard();
 			}
@@ -4952,6 +5069,11 @@
 			return false;
 		}
 
+		// block editing for done notes and completed divider
+		var note = this.closest('.note');
+		if (note && (note.classList.contains('done') || note.classList.contains('completed-divider')))
+			return false;
+
 		NB.noteDrag.cancelPriming();
 
 		startEditing(this, ev);
@@ -5196,13 +5318,53 @@
 	});
 
 	delegate(document.querySelector('.wrap'), 'click', '.board .collapse', function(){
-		this.closest('.note').classList.toggle('collapsed');
+		var note = this.closest('.note');
+		if (note.classList.contains('completed-divider')) {
+			note.classList.toggle('section-collapsed');
+			saveBoard();
+			return false;
+		}
+		note.classList.toggle('collapsed');
+		saveBoard();
+		return false;
+	});
+
+	delegate(document.querySelector('.wrap'), 'click', '.board .done-note', function(){
+		var note = this.closest('.note');
+		var list = note.closest('.list');
+		var notes = list.querySelector('.notes');
+
+		if (note.classList.contains('done')) {
+			// mark incomplete — move above divider
+			note.classList.remove('done');
+			var divider = notes.querySelector('.completed-divider');
+			if (divider) {
+				notes.insertBefore(note, divider);
+				// hide divider if no more done notes
+				if (!notes.querySelector('.note.done')) {
+					divider.remove();
+				}
+			}
+		} else {
+			// mark complete — move to end
+			note.classList.add('done');
+			var divider = notes.querySelector('.completed-divider');
+			if (!divider) {
+				var ndiv = document.querySelector('tt .note');
+				divider = ndiv.cloneNode(true);
+				divider.classList.add('raw', 'completed-divider');
+				setText( divider.querySelector('.text'), 'Completed' );
+				notes.appendChild(divider);
+			}
+			notes.appendChild(note);
+		}
 		saveBoard();
 		return false;
 	});
 
 	//
 	delegate(document.querySelector('.wrap'), 'mousedown', '.board .note .text', function(ev){
+		if (this.parentNode.classList.contains('completed-divider')) return;
 		NB.noteDrag.prime(this.parentNode, ev);
 	});
 
