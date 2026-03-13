@@ -2873,7 +2873,7 @@
 		_headers()
 		{
 			return {
-				'Authorization' : 'Bearer ' + this.conf.token,
+				'Authorization' : 'Bearer ' + this.conf.token.trim(),
 				'Accept'        : 'application/vnd.github+json',
 				'Content-Type'  : 'application/json'
 			};
@@ -2892,13 +2892,27 @@
 
 		saveConfig(conf, cb)
 		{
+			// Strip tokens/auth from config before saving to gist,
+			// otherwise GitHub secret scanning detects and revokes them
+			var safe = JSON.parse(JSON.stringify(conf));
+			if (safe.backups && safe.backups.agents)
+			{
+				safe.backups.agents.forEach(function(a){
+					if (a.conf)
+					{
+						delete a.conf.token;
+						delete a.conf.auth;
+					}
+				});
+			}
+
 			this.queue.push({
 				what : 'saveConfig',
 				cb   : cb,
 				args : {
 					_gistMethod: 'saveFile',
 					fileName   : 'simpleboard-config.json',
-					content    : JSON.stringify(conf)
+					content    : JSON.stringify(safe)
 				}
 			});
 
@@ -4475,7 +4489,7 @@
 		ret.rem.conf.auth = remDiv.querySelector('.auth').value;
 
 		ret.gist.enabled       = ! gistDiv.classList.contains('off');
-		ret.gist.conf.token    = gistDiv.querySelector('.gist-token').value;
+		ret.gist.conf.token    = gistDiv.querySelector('.gist-token').value.trim();
 
 		// Extract gist ID from URL if user pasted a full gist URL
 		var gistIdVal = gistDiv.querySelector('.gist-id').value.trim();
