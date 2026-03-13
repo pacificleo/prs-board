@@ -1,7 +1,7 @@
 +-------------------------------------------------------------+
 |                                                             |
-|             Nullboard, a minimalist kanban board            |
-|                    https://nullboard.io                     |
+|            SimpleBoard, a minimalist kanban board            |
+|          https://github.com/pacificleo/prs-board            |
 |                                                             |
 +-------------------------------------------------------------+
 
@@ -35,6 +35,6 @@ of the Software. Any license notice or attribution required
 by the License must also include this Commons Clause License
 Condition notice.
 
-Software:  Nullboard
+Software:  SimpleBoard
 License:   The 2-clause BSD License
 Licensor:  Alexander Pankratov / swapped.ch

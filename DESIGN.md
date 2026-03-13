@@ -1,19 +1,19 @@
-# Nullboard (prs-board) - Design Document
+# SimpleBoard (prs-board) - Design Document
 
 ## Project Overview
 
-Nullboard is a minimalist, offline-first kanban board / task list manager delivered as a **single HTML file** (~5,185 lines). It requires no backend, no build process, and no internet connection after initial load. All data is persisted in the browser's `localStorage`.
+SimpleBoard is a minimalist, offline-first kanban board / task list manager delivered as a **single HTML file**. It requires no backend, no build process, and no internet connection after initial load. All data is persisted in the browser's `localStorage`.
 
-**Live preview:** https://nullboard.io/preview
+**Project page:** https://github.com/pacificleo/prs-board
 
 ### Key Characteristics
 
-- Single-file application (`nullboard.html`) with embedded CSS and JavaScript
+- Single-file application (`simpleboard.html`) with embedded CSS and JavaScript
 - Completely offline capable (works as `file://` or served via HTTP)
 - Multi-board support with instant switching
 - 50-revision undo/redo history per board
 - Drag-and-drop reordering of notes and lists
-- Export/import via `.nbx` JSON files
+- Export/import via `.sbx` JSON files
 - Optional backup to external HTTP agents
 - Modern Notion/Trello-inspired UI with light and dark themes
 
@@ -37,7 +37,7 @@ Nullboard is a minimalist, offline-first kanban board / task list manager delive
 
 ```
 prs-board/
-├── nullboard.html              # Complete application (single file)
+├── simpleboard.html            # Complete application (single file)
 ├── README.md                   # Project documentation
 ├── LICENSE                     # License
 ├── extras/                     # Static assets
@@ -46,13 +46,13 @@ prs-board/
 └── images/                     # Screenshots and demo GIFs
 ```
 
-There are no configuration files, no `package.json`, no bundler config. The entire application lives in `nullboard.html`.
+There are no configuration files, no `package.json`, no bundler config. The entire application lives in `simpleboard.html`.
 
 ---
 
 ## Architecture
 
-### Code Organization (within nullboard.html)
+### Code Organization (within simpleboard.html)
 
 The single HTML file is organized into these sections:
 
@@ -121,7 +121,7 @@ Board                      # Board data container
 ```
 
 ### AppConfig
-Stored in `localStorage` as `nullboard.config`:
+Stored in `localStorage` as `simpleboard.config`:
 - UI preferences: `fontName`, `fontSize`, `lineHeight`, `listWidth`, `theme`
 - State: `activeBoard`, `verLast`, `verSeen`
 - Backup agent configurations (array of `{ base, auth }` objects)
@@ -144,8 +144,8 @@ User Action (click, drag, edit)
          |
     +-- Assign new revision number
     +-- Trim old revisions (keep maxUndo)
-    +-- Store board data:  localStorage['nullboard.board.{id}.{revision}']
-    +-- Store metadata:    localStorage['nullboard.board.{id}.meta']
+    +-- Store board data:  localStorage['simpleboard.board.{id}.{revision}']
+    +-- Store metadata:    localStorage['simpleboard.board.{id}.meta']
     +-- Trigger backup (if configured)
          |
     SimpleBackup agents (async, queued via fetch API)
@@ -157,9 +157,9 @@ User Action (click, drag, edit)
 
 | Key | Content |
 |-----|---------|
-| `nullboard.config` | App configuration (JSON) |
-| `nullboard.board.{id}.meta` | Board metadata: title, current revision, history array, backup status |
-| `nullboard.board.{id}.{rev}` | Board data snapshot at revision `rev` (JSON) |
+| `simpleboard.config` | App configuration (JSON) |
+| `simpleboard.board.{id}.meta` | Board metadata: title, current revision, history array, backup status |
+| `simpleboard.board.{id}.{rev}` | Board data snapshot at revision `rev` (JSON) |
 
 ### Revision History
 
@@ -250,7 +250,7 @@ Each list can have its own pastel background color from a curated 11-color palet
 - Note text: generous padding (8px 12px)
 
 ### Export / Import
-- Format: `.nbx` files (JSON)
+- Format: `.sbx` files (JSON)
 - Supports single board or batch export/import
 - Blob version validation on import
 
@@ -258,7 +258,7 @@ Each list can have its own pastel background color from a curated 11-color palet
 
 ## Backup Agent Protocol
 
-Nullboard can sync data to external backup agents over HTTP REST:
+SimpleBoard can sync data to external backup agents over HTTP REST:
 
 ### Endpoints
 
@@ -279,7 +279,6 @@ All requests include `X-Access-Token` header if authentication is configured.
 ```
 
 ### Known Backup Agents
-- **Nullboard Agent** - Windows native app (default port 10001)
 - **nullboard-agent-express** - Node.js/Express port ([GitHub](https://github.com/justinpchang/nullboard-agent-express))
 - **nbagent** - Python/Unix agent ([GitHub](https://github.com/luismedel/nbagent))
 
@@ -287,13 +286,13 @@ Backup requests are queued and processed asynchronously. Each agent tracks statu
 
 ### GitHub Gist Backup
 
-Nullboard can also back up all boards to a single GitHub Gist via the `GistBackup` class:
+SimpleBoard can also back up all boards to a single GitHub Gist via the `GistBackup` class:
 
 - **Authentication:** Requires a GitHub Personal Access Token (PAT) with the `gist` scope
 - **Storage model:** One gist contains all boards as separate files:
-  - `nullboard-config.json` — app configuration
-  - `nullboard-board-{id}.json` — board data (one per board)
-  - `nullboard-meta-{id}.json` — board metadata (one per board)
+  - `simpleboard-config.json` — app configuration
+  - `simpleboard-board-{id}.json` — board data (one per board)
+  - `simpleboard-meta-{id}.json` — board metadata (one per board)
 - **Auto-creation:** If no Gist ID is provided, a new secret gist is created automatically on first save
 - **Versioning:** GitHub tracks gist revision history automatically
 - **Restore:** All boards can be restored from a gist by providing the Gist ID (or full gist URL) and token. Supports restoring onto a new browser/device
@@ -307,9 +306,8 @@ Configuration is managed alongside the existing Local/Remote backup agents in th
 
 No build step is required. Deployment options:
 
-1. **Static file server** - Serve `nullboard.html` and `extras/` from any HTTP server
-2. **Local file** - Open `nullboard.html` directly in a browser (`file://` protocol)
-3. **Docker** - Community Docker image available at [rsoper/nullboard](https://github.com/rsoper/nullboard)
+1. **Static file server** - Serve `simpleboard.html` and `extras/` from any HTTP server
+2. **Local file** - Open `simpleboard.html` directly in a browser (`file://` protocol)
 
 ### Browser Support
 - Primary: Firefox, Chrome

@@ -5,8 +5,8 @@
 
 	+-------------------------------------------------------------+
 	|                                                             |
-	|             Nullboard, a minimalist kanban board            |
-	|                    https://nullboard.io                     |
+	|             SimpleBoard, a minimalist kanban board            |
+	|                    https://github.com/pacificleo/prs-board                     |
 	|                                                             |
 	+-------------------------------------------------------------+
 
@@ -40,14 +40,14 @@
 	by the License must also include this Commons Clause License
 	Condition notice.
 
-	Software:  Nullboard
+	Software:  SimpleBoard
 	License:   The 2-clause BSD License
 	Licensor:  Alexander Pankratov / swapped.ch
 
   -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nullboard</title>
+  <title>SimpleBoard</title>
   <link rel="icon" href="extras/favicon-16.png"/>
   <style>
 
@@ -1784,7 +1784,7 @@
 
 			<a href=# class=exp-board>Export current board...</a>
 			<a href=# class=imp-board>Import boards...</a>
-				<input class=imp-board-select type="file" accept=".nbx">
+				<input class=imp-board-select type="file" accept=".sbx,.nbx">
 
 			<a href=# class=auto-backup>Auto-backup...</a>
 
@@ -1810,7 +1810,7 @@
 			</div>
 
 			<div class=break>
-				<a href=# class=view-about>About Nullboard</a>
+				<a href=# class=view-about>About SimpleBoard</a>
 			</div>
 		</div>
 	</div>
@@ -1895,9 +1895,9 @@
 		<textarea class=encoder></textarea>
 
 		<div class=about>
-			<h1>Nullboard</h1>
+			<h1>SimpleBoard</h1>
 			Minimalist locally-stored kanban board
-			<a href=https://nullboard.io target=_blank>https://nullboard.io</a>
+			<a href=https://github.com/pacificleo/prs-board target=_blank>https://github.com/pacificleo/prs-board</a>
 			<div></div>
 		</div>
 
@@ -1909,7 +1909,7 @@
 
 			<h3>Auto-backup</h3>
 			<div class=what>
-				<a href=https://nullboard.io/backups target=_blank>What is this?</a>
+				<a href=https://github.com/pacificleo/prs-board target=_blank>What is this?</a>
 			</div>
 
 			<div class=loc>
@@ -1932,7 +1932,7 @@
 			<div class=gist>
 				<div class=opt>GitHub Gist</div>
 				<div class=etc>
-					<span><a href="https://github.com/settings/tokens/new?scopes=gist&description=Nullboard+backup" target=_blank class=gist-link title="Create a token on GitHub">Token</a></span>  <input class=gist-token placeholder="GitHub PAT with gist scope"><br>
+					<span><a href="https://github.com/settings/tokens/new?scopes=gist&description=SimpleBoard+backup" target=_blank class=gist-link title="Create a token on GitHub">Token</a></span>  <input class=gist-token placeholder="GitHub PAT with gist scope"><br>
 					<span><a href="https://gist.github.com/" target=_blank class=gist-link title="Your gists on GitHub">Gist ID</a></span> <input class=gist-id placeholder="auto-created if empty"><br>
 					<p class=gist-restore-row><a href=# class=gist-restore>Restore from this gist...</a></p>
 					<p class=status><span>Status</span> <input disabled></p>
@@ -2628,23 +2628,26 @@
 
 		getItem(name)
 		{
-			return localStorage.getItem('nullboard.' + name);
+			return localStorage.getItem('simpleboard.' + name);
 		}
 
 		setItem(name, val)
 		{
-			localStorage.setItem('nullboard.' + name, val);
+			localStorage.setItem('simpleboard.' + name, val);
 			return true;
 		}
 
 		delItem(name)
 		{
-			localStorage.removeItem('nullboard.' + name);
+			localStorage.removeItem('simpleboard.' + name);
 			return true;
 		}
 
 		openInner()
 		{
+			// Migrate legacy nullboard.* localStorage keys to simpleboard.*
+			this._migrateFromNullboard();
+
 			var conf = this.getJson('config');
 			var newInstall = true;
 
@@ -2678,7 +2681,7 @@
 			for (var i=0; i<localStorage.length; i++)
 			{
 				var k = localStorage.key(i);
-				var m = k.match(/^nullboard\.board\.(\d+).meta$/);
+				var m = k.match(/^simpleboard\.board\.(\d+).meta$/);
 
 				if (! m)
 					continue;
@@ -2715,7 +2718,7 @@
 			for (var i=0; i<localStorage.length; i++)
 			{
 				var k = localStorage.key(i);
-				var m = k.match(/^nullboard\.board\.(\d+)$/);
+				var m = k.match(/^simpleboard\.board\.(\d+)$/);
 
 				if (! m)
 					continue;
@@ -2746,7 +2749,7 @@
 			for (var i=0; i<localStorage.length; )
 			{
 				var k = localStorage.key(i);
-				var m = k.match(/^nullboard\./);
+				var m = k.match(/^simpleboard\./);
 
 				if (m) localStorage.removeItem(k);
 				else   i++;
@@ -2754,6 +2757,29 @@
 
 			this.conf = new AppConfig();
 			this.boardIndex = new Map();
+		}
+
+		_migrateFromNullboard()
+		{
+			var dominated = [];
+
+			for (var i = 0; i < localStorage.length; i++)
+			{
+				var k = localStorage.key(i);
+				if (k.indexOf('nullboard.') !== 0) continue;
+
+				var newKey = 'simpleboard.' + k.substring('nullboard.'.length);
+				if (localStorage.getItem(newKey) === null)
+					localStorage.setItem(newKey, localStorage.getItem(k));
+
+				dominated.push(k);
+			}
+
+			if (dominated.length)
+			{
+				console.log('Migrated ' + dominated.length + ' keys from nullboard.* to simpleboard.*');
+				dominated.forEach(function(k){ localStorage.removeItem(k); });
+			}
 		}
 
 		/*
@@ -2771,7 +2797,7 @@
 
 			// load history
 
-			var re = new RegExp('^nullboard\.board\.' + board_id + '\.(\\d+)$');
+			var re = new RegExp('^simpleboard.board.' + board_id + '\.(\\d+)$');
 			var revs = new Array();
 
 			for (var i=0; i<localStorage.length; i++)
@@ -2883,8 +2909,8 @@
 		{
 			var files = {};
 
-			if (data) files['nullboard-board-' + id + '.json'] = JSON.stringify(data);
-			if (meta) files['nullboard-meta-' + id + '.json']  = JSON.stringify(meta);
+			if (data) files['simpleboard-board-' + id + '.json'] = JSON.stringify(data);
+			if (meta) files['simpleboard-meta-' + id + '.json']  = JSON.stringify(meta);
 
 			this.queue.push({
 				what : 'saveBoard',
@@ -2906,8 +2932,8 @@
 				args : {
 					_gistMethod : 'deleteFiles',
 					fileNames   : [
-						'nullboard-board-' + id + '.json',
-						'nullboard-meta-' + id + '.json'
+						'simpleboard-board-' + id + '.json',
+						'simpleboard-meta-' + id + '.json'
 					]
 				}
 			});
@@ -2940,7 +2966,7 @@
 				var boards = [];
 
 				Object.keys(gist.files).forEach(function(name){
-					var m = name.match(/^nullboard-board-(\d+)\.json$/);
+					var m = name.match(/^simpleboard-board-(\d+)\.json$/);
 					if (m)
 					{
 						try { boards.push( JSON.parse(gist.files[name].content) ); }
@@ -3045,7 +3071,7 @@
 				method  : 'POST',
 				headers : this._headers(),
 				body    : JSON.stringify({
-					description : 'Nullboard backup',
+					description : 'SimpleBoard backup',
 					public      : false,
 					files       : {
 						'simpleboard-config.json': { content: '{}' }
@@ -4181,7 +4207,7 @@
 	function createDemoBoard()
 	{
 		var blob =
-			'{"format":20190412,"id":1555071015420,"revision":581,"title":"Welcome to Nullboard","lists":[{"title":"The Use' +
+			'{"format":20190412,"id":1555071015420,"revision":581,"title":"Welcome to SimpleBoard","lists":[{"title":"The Use' +
 			'r Manual","notes":[{"text":"This is a note.\\nA column of notes is a list.\\nA set of lists is a board.","raw"' +
 			':false,"min":false},{"text":"All data is saved locally.\\nThe whole thing works completely offline.","raw":fal' +
 			'se,"min":false},{"text":"Last 50 board revisions are retained.","raw":false,"min":false},{"text":"Ctrl-Z is Un' +
@@ -4189,7 +4215,7 @@
 			't":"Caveats","raw":true,"min":false},{"text":"Desktop-oriented.\\nMobile support is basically untested.","raw"' +
 			':false,"min":false},{"text":"Works in Firefox, Chrome is supported.\\nShould work in Safari, may work in Edge.' +
 			'","raw":false,"min":false},{"text":"Still very much in beta. Caveat emptor.","raw":false,"min":false},{"text":' +
-			'"Issues and suggestions","raw":true,"min":false},{"text":"Post them on Github.\\nSee \\"Nullboard\\" at the to' +
+			'"Issues and suggestions","raw":true,"min":false},{"text":"Post them on Github.\\nSee \\"SimpleBoard\\" at the to' +
 			'p left for the link.","raw":false,"min":false}]},{"title":"Things to try","notes":[{"text":"\u2022   Click on ' +
 			'a note to edit.","raw":false,"min":false},{"text":"\u2022   Click outside of it when done editing.\\n\u2022   ' +
 			'Alternatively, use Shift-Enter.","raw":false,"min":false},{"text":"\u2022   To discard changes press Escape.",' +
@@ -4199,7 +4225,7 @@
 			'   R changes how a note looks.\\n\u2022   _  collapses the note.","raw":false,"min":false},{"text":"This is a ' +
 			'raw note.","raw":true,"min":false},{"text":"This is a collapsed note. Only its first line is visible. Useful f' +
 			'or keeping lists compact.","raw":false,"min":true}, {"text":"Links","raw":true,"min":false}, {"text":"Links pu' +
-			'lse on hover and can be opened via the right-click menu  -  https://nullboard.io","raw":false,"min":false}, {"tex' +
+			'lse on hover and can be opened via the right-click menu  -  https://github.com/pacificleo/prs-board","raw":false,"min":false}, {"tex' +
 			't":"Pressing CapsLock or Control highlights all links and makes them left-clickable.","raw":false,"min":false}]},{"title"' +
 			':"More things to try","notes":[{"text":"\u2022   Drag notes around to rearrange.\\n\u2022   Works between the ' +
 			'lists too.","raw":false,"min":false},{"text":"\u2022   Click on a list name to edit.\\n\u2022   Enter to save,' +
@@ -4242,13 +4268,13 @@
 			})
 
 			blob = JSON.stringify(all);
-			file = `Nullboard.nbx`;
+			file = `SimpleBoard.sbx`;
 		}
 		else
 		{
 			var board = NB.board;
 			blob = JSON.stringify(board);
-			file = `Nullboard-${board.id}-${board.title}.nbx`;
+			file = `SimpleBoard-${board.id}-${board.title}.sbx`;
 		}
 
 		blob = encodeURIComponent(blob);
@@ -4801,12 +4827,12 @@
 	 */
 	function updatePageTitle()
 	{
-		var title = 'Nullboard';
+		var title = 'SimpleBoard';
 
 		if (NB.board)
 		{
 			title = NB.board.title;
-			title = 'NB - ' + (title || '(untitled board)');
+			title = 'SimpleBoard - ' + (title || '(untitled board)');
 		}
 
 		document.title = title;
