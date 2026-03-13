@@ -72,7 +72,8 @@ Storage (abstract)
 └── Storage_Local          # localStorage-backed persistence
 
 BackupStorage (abstract)
-└── SimpleBackup           # HTTP REST backup to external agents
+├── SimpleBackup           # HTTP REST backup to external agents
+└── GistBackup             # GitHub Gist backup (stores all boards in a single gist)
 
 Drag2                      # Drag-and-drop handler for notes and lists
 VarAdjust                  # Mouse-drag UI preference adjustments
@@ -284,6 +285,22 @@ All requests include `X-Access-Token` header if authentication is configured.
 
 Backup requests are queued and processed asynchronously. Each agent tracks status: `busy`, `ready`, or `error`.
 
+### GitHub Gist Backup
+
+Nullboard can also back up all boards to a single GitHub Gist via the `GistBackup` class:
+
+- **Authentication:** Requires a GitHub Personal Access Token (PAT) with the `gist` scope
+- **Storage model:** One gist contains all boards as separate files:
+  - `nullboard-config.json` — app configuration
+  - `nullboard-board-{id}.json` — board data (one per board)
+  - `nullboard-meta-{id}.json` — board metadata (one per board)
+- **Auto-creation:** If no Gist ID is provided, a new secret gist is created automatically on first save
+- **Versioning:** GitHub tracks gist revision history automatically
+- **Restore:** All boards can be restored from a gist by providing the Gist ID (or full gist URL) and token. Supports restoring onto a new browser/device
+- **URL support:** The Gist ID field accepts both raw IDs and full `gist.github.com` URLs
+
+Configuration is managed alongside the existing Local/Remote backup agents in the Auto-backup dialog.
+
 ---
 
 ## Deployment
@@ -313,7 +330,7 @@ No build step is required. Deployment options:
 ## JavaScript Patterns
 
 - **Zero dependencies** - all DOM manipulation uses vanilla JS (no jQuery or other libraries)
-- **ES6 classes** for Storage, BackupStorage, and SimpleBackup
+- **ES6 classes** for Storage, BackupStorage, SimpleBackup, and GistBackup
 - **Prototypal patterns** for UI classes (Drag2, VarAdjust)
 - **Native DOM APIs** - `querySelector`/`querySelectorAll`, `classList`, `addEventListener`
 - **Custom `delegate()` helper** for event delegation (replaces jQuery's `.on(event, selector, fn)`)

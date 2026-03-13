@@ -1369,6 +1369,34 @@
 		cursor: default;
 	}
 
+	.overlay .backup-conf .gist-link {
+		color: inherit;
+		text-decoration: none;
+		border-bottom: 1px dashed #aaa;
+	}
+
+	.overlay .backup-conf .gist-link:hover {
+		color: #2383e2;
+		border-bottom-color: #2383e2;
+	}
+
+	.overlay .backup-conf .gist-restore-row {
+		margin: 2px 0 4px;
+	}
+
+	.overlay .backup-conf .gist-restore-row a {
+		color: #2383e2;
+		font-size: calc(10rem / 11);
+	}
+
+	.overlay .backup-conf .gist-restore-row a:hover {
+		text-decoration: underline;
+	}
+
+	.overlay .backup-conf .off .gist-restore-row {
+		display: none;
+	}
+
 	/***/
 
 	@media print {
@@ -1901,6 +1929,16 @@
 				</div>
 			</div>
 
+			<div class=gist>
+				<div class=opt>GitHub Gist</div>
+				<div class=etc>
+					<span><a href="https://github.com/settings/tokens/new?scopes=gist&description=Nullboard+backup" target=_blank class=gist-link title="Create a token on GitHub">Token</a></span>  <input class=gist-token placeholder="GitHub PAT with gist scope"><br>
+					<span><a href="https://gist.github.com/" target=_blank class=gist-link title="Your gists on GitHub">Gist ID</a></span> <input class=gist-id placeholder="auto-created if empty"><br>
+					<p class=gist-restore-row><a href=# class=gist-restore>Restore from this gist...</a></p>
+					<p class=status><span>Status</span> <input disabled></p>
+				</div>
+			</div>
+
 			<div class=save><a href=# class=check>Check...</a> <a href=# class=ok>Save</a></div>
 		</div>
 	</tt>
@@ -2401,6 +2439,7 @@
 		{
 			var conf = this.conf;
 			var simp = (new SimpleBackup).type;
+			var gist = (new GistBackup).type;
 
 			if (conf.board && ! this.boardIndex.has(conf.board))
 				conf.board = null;
@@ -2412,14 +2451,30 @@
 			}
 
 			var agents = conf.backups.agents;
+			var needsReinit = false;
 
-			if (agents.length != 2 ||
+			// Check the two SimpleBackup agents (indices 0 and 1)
+			if (agents.length < 2 ||
 			    agents[0].type != simp || agents[0].conf.base != 'http://127.0.0.1:10001' ||
 			    agents[1].type != simp)
+			{
+				needsReinit = true;
+			}
+
+			// Check the GistBackup agent (index 2)
+			if (agents.length < 3 || agents[2].type != gist)
+			{
+				needsReinit = true;
+			}
+
+			if (needsReinit)
 			{
 				const def = default_backup_agents;
 
 				console.log('Unexpected backup config, will re-initialize.', agents);
+
+				// Preserve existing gist config if present
+				var existingGist = agents.length >= 3 && agents[2].type == gist ? agents[2] : null;
 
 				conf.backups.agents = [];
 
@@ -2437,6 +2492,14 @@
 					id      : simp + '-' + (conf.backups.nextId++),
 					enabled : def[1].base && def[1].auth,
 					conf    : def[1],
+				})
+
+				conf.backups.agents.push(existingGist || {
+					// gist
+					type    : gist,
+					id      : gist + '-' + (conf.backups.nextId++),
+					enabled : false,
+					conf    : { token: '', gist_id: '' },
 				})
 
 				this.saveConfig();
@@ -2765,6 +2828,326 @@
 		saveConfig(conf, cb)           { throw 'implement-me'; }
 		saveBoard (id, data, meta, cb) { throw 'implement-me'; }
 		nukeBoard (id, cb)             { throw 'implement-me'; }
+	}
+
+	/*
+	 *	Gist-based backup - stores all boards as files in a single GitHub Gist
+	 */
+	class GistBackup extends BackupStorage
+	{
+		constructor(id, conf, onStatusChange)
+		{
+			super(id, null, onStatusChange);
+
+			this.type = 'gist';
+			this.conf = { token: '', gist_id: '' };
+			this.conf = Object.assign(this.conf, conf);
+		}
+
+		_headers()
+		{
+			return {
+				'Authorization' : 'Bearer ' + this.conf.token,
+				'Accept'        : 'application/vnd.github+json',
+				'Content-Type'  : 'application/json'
+			};
+		}
+
+		checkStatus(cb)
+		{
+			this.queue.push({
+				what : 'checkStatus',
+				cb   : cb,
+				args : { _gistMethod: 'checkStatus' }
+			});
+
+			this.runQueue();
+		}
+
+		saveConfig(conf, cb)
+		{
+			this.queue.push({
+				what : 'saveConfig',
+				cb   : cb,
+				args : {
+					_gistMethod: 'saveFile',
+					fileName   : 'simpleboard-config.json',
+					content    : JSON.stringify(conf)
+				}
+			});
+
+			this.runQueue();
+		}
+
+		saveBoard(id, data, meta, cb)
+		{
+			var files = {};
+
+			if (data) files['nullboard-board-' + id + '.json'] = JSON.stringify(data);
+			if (meta) files['nullboard-meta-' + id + '.json']  = JSON.stringify(meta);
+
+			this.queue.push({
+				what : 'saveBoard',
+				cb   : cb,
+				args : {
+					_gistMethod : 'saveFiles',
+					files       : files
+				}
+			});
+
+			this.runQueue();
+		}
+
+		nukeBoard(id, cb)
+		{
+			this.queue.push({
+				what : 'nukeBoard',
+				cb   : cb,
+				args : {
+					_gistMethod : 'deleteFiles',
+					fileNames   : [
+						'nullboard-board-' + id + '.json',
+						'nullboard-meta-' + id + '.json'
+					]
+				}
+			});
+
+			this.runQueue();
+		}
+
+		/*
+		 *	Restore all boards from the gist
+		 */
+		restoreAll(cb)
+		{
+			var self = this;
+
+			if (! this.conf.gist_id || ! this.conf.token)
+			{
+				cb(false, 'Gist ID and token are required');
+				return;
+			}
+
+			fetch('https://api.github.com/gists/' + this.conf.gist_id, {
+				method  : 'GET',
+				headers : this._headers()
+			})
+			.then(function(response) {
+				if (! response.ok) throw new Error('HTTP ' + response.status);
+				return response.json();
+			})
+			.then(function(gist) {
+				var boards = [];
+
+				Object.keys(gist.files).forEach(function(name){
+					var m = name.match(/^nullboard-board-(\d+)\.json$/);
+					if (m)
+					{
+						try { boards.push( JSON.parse(gist.files[name].content) ); }
+						catch(e) { console.log('Failed to parse gist file: ' + name); }
+					}
+				});
+
+				cb(true, boards);
+			})
+			.catch(function(err) {
+				cb(false, err.message || 'Failed to fetch gist');
+			});
+		}
+
+		/*
+		 *	private
+		 */
+		runQueue()
+		{
+			var self = this;
+
+			if (! this.queue.length)
+				return;
+
+			if (this.status == 'busy')
+				return;
+
+			var req = this.queue.shift();
+
+			this.setStatus('busy', req.what);
+
+			var method = req.args._gistMethod;
+
+			if (method == 'checkStatus')
+			{
+				this._checkStatusRequest(req);
+			}
+			else
+			if (method == 'saveFile')
+			{
+				var files = {};
+				files[req.args.fileName] = { content: req.args.content };
+				this._patchGist(req, files);
+			}
+			else
+			if (method == 'saveFiles')
+			{
+				var files = {};
+				Object.keys(req.args.files).forEach(function(name){
+					files[name] = { content: req.args.files[name] };
+				});
+				this._patchGist(req, files);
+			}
+			else
+			if (method == 'deleteFiles')
+			{
+				var files = {};
+				req.args.fileNames.forEach(function(name){
+					files[name] = null;  // null deletes the file from the gist
+				});
+				this._patchGist(req, files);
+			}
+		}
+
+		_checkStatusRequest(req)
+		{
+			var self = this;
+
+			if (! this.conf.token)
+			{
+				var fakeXhr = { status: 0, responseText: 'Token is required' };
+				this.onRequestDone(req, false, fakeXhr);
+				return;
+			}
+
+			// If we have a gist_id, verify it exists; otherwise just verify token works
+			var url = this.conf.gist_id
+				? 'https://api.github.com/gists/' + this.conf.gist_id
+				: 'https://api.github.com/gists?per_page=1';
+
+			fetch(url, {
+				method  : 'GET',
+				headers : this._headers()
+			})
+			.then(function(response) {
+				return response.text().then(function(text) {
+					var fakeXhr = { status: response.status, responseText: text };
+					self.onRequestDone(req, response.ok, fakeXhr);
+				});
+			})
+			.catch(function(err) {
+				var fakeXhr = { status: 0, responseText: 'Offline or CORS-blocked' };
+				self.onRequestDone(req, false, fakeXhr);
+			});
+		}
+
+		_createGist(cb)
+		{
+			var self = this;
+
+			fetch('https://api.github.com/gists', {
+				method  : 'POST',
+				headers : this._headers(),
+				body    : JSON.stringify({
+					description : 'Nullboard backup',
+					public      : false,
+					files       : {
+						'simpleboard-config.json': { content: '{}' }
+					}
+				})
+			})
+			.then(function(response) {
+				if (! response.ok) throw new Error('HTTP ' + response.status);
+				return response.json();
+			})
+			.then(function(gist) {
+				self.conf.gist_id = gist.id;
+				cb(true);
+			})
+			.catch(function(err) {
+				cb(false);
+			});
+		}
+
+		_patchGist(req, files)
+		{
+			var self = this;
+
+			var doPatch = function() {
+				fetch('https://api.github.com/gists/' + self.conf.gist_id, {
+					method  : 'PATCH',
+					headers : self._headers(),
+					body    : JSON.stringify({ files: files })
+				})
+				.then(function(response) {
+					return response.text().then(function(text) {
+						var fakeXhr = { status: response.status, responseText: text };
+						self.onRequestDone(req, response.ok, fakeXhr);
+					});
+				})
+				.catch(function(err) {
+					var fakeXhr = { status: 0, responseText: 'Offline or CORS-blocked' };
+					self.onRequestDone(req, false, fakeXhr);
+				});
+			};
+
+			if (! this.conf.gist_id)
+			{
+				this._createGist(function(ok) {
+					if (ok)
+					{
+						// persist the newly created gist_id back to the stored config
+						var conf = NB.storage.getConfig();
+						conf.backups.agents.forEach(function(a){
+							if (a.type == 'gist') a.conf.gist_id = self.conf.gist_id;
+						});
+						NB.storage.saveConfig();
+						doPatch();
+					}
+					else
+					{
+						var fakeXhr = { status: 0, responseText: 'Failed to create gist' };
+						self.onRequestDone(req, false, fakeXhr);
+					}
+				});
+			}
+			else
+			{
+				doPatch();
+			}
+		}
+
+		onRequestDone(req, ok, xhr)
+		{
+			console.log( `Gist backup '${this.id}', ${this.lastOp}() -> ${ok ? 'ok' : 'failed'}` );
+
+			var code = xhr.status;
+			var text = xhr.responseText || (code ? `Response code ${code}` : 'Offline or CORS-blocked');
+
+			// Truncate long JSON responses for display
+			if (text.length > 80) text = code ? `Response code ${code}` : text.substring(0, 80);
+
+			this.lastXhr = { text: text, code: code };
+
+			if (req.cb) req.cb.call(this, ok);
+
+			if (! this.queue.length)
+			{
+				this.setStatus(ok ? 'ready' : 'error', this.lastOp);
+				return;
+			}
+
+			this.status = 'pre-busy';
+			this.runQueue();
+		}
+
+		setStatus(status, op)
+		{
+			if (status == 'busy' && this.status == 'busy')
+				throw `Gist backup ${this.id} is already busy!`;
+
+			console.log( `Gist backup '${this.id}' status: '${this.status}' -> '${status}'` );
+
+			this.status = status;
+			this.lastOp = op;
+			this.onStatusChange(this);
+		}
 	}
 
 	class SimpleBackup extends BackupStorage
@@ -3998,11 +4381,19 @@
 		var a = null;
 
 		NB.storage.backups.agents.forEach(function(agent){
-			if (agent.type      == which.type &&
-			    agent.conf.auth == which.conf.auth &&
-			    agent.conf.base == which.conf.base)
+			if (agent.type == which.type)
 			{
-				a = agent;
+				if (agent.type == 'gist')
+				{
+					if (agent.conf.token == which.conf.token)
+						a = agent;
+				}
+				else
+				{
+					if (agent.conf.auth == which.conf.auth &&
+					    agent.conf.base == which.conf.base)
+						a = agent;
+				}
 			}
 		});
 
@@ -4036,15 +4427,18 @@
 		var conf = NB.storage.getConfig();
 		var loc  = conf.backups.agents[0];
 		var rem  = conf.backups.agents[1];
+		var gst  = conf.backups.agents[2];
 
 		var div = document.querySelector('.overlay .backup-conf');
-		var locDiv = div.querySelector('.loc');
-		var remDiv = div.querySelector('.rem');
+		var locDiv  = div.querySelector('.loc');
+		var remDiv  = div.querySelector('.rem');
+		var gistDiv = div.querySelector('.gist');
 
 		var ret =
 		{
-			loc: jsonClone(loc),
-			rem: jsonClone(rem)
+			loc:  jsonClone(loc),
+			rem:  jsonClone(rem),
+			gist: jsonClone(gst)
 		};
 
 		ret.loc.enabled   = ! locDiv.classList.contains('off');
@@ -4053,6 +4447,14 @@
 		ret.rem.enabled   = ! remDiv.classList.contains('off');
 		ret.rem.conf.base = remDiv.querySelector('.base').value;
 		ret.rem.conf.auth = remDiv.querySelector('.auth').value;
+
+		ret.gist.enabled       = ! gistDiv.classList.contains('off');
+		ret.gist.conf.token    = gistDiv.querySelector('.gist-token').value;
+
+		// Extract gist ID from URL if user pasted a full gist URL
+		var gistIdVal = gistDiv.querySelector('.gist-id').value.trim();
+		var gistUrlMatch = gistIdVal.match(/gist\.github\.com\/[^\/]+\/([a-f0-9]+)/);
+		ret.gist.conf.gist_id  = gistUrlMatch ? gistUrlMatch[1] : gistIdVal;
 
 		//
 		if (ret.loc.enabled && ! ret.loc.conf.auth)
@@ -4070,6 +4472,12 @@
 		if (ret.rem.enabled && ! ret.rem.conf.auth)
 		{
 			shakeControl(remDiv.querySelector('.auth'));
+			return null;
+		}
+
+		if (ret.gist.enabled && ! ret.gist.conf.token)
+		{
+			shakeControl(gistDiv.querySelector('.gist-token'));
 			return null;
 		}
 
@@ -4112,18 +4520,21 @@
 	{
 		var conf = NB.storage.getConfig();
 
-		if (conf.backups.agents.length != 2)
+		if (conf.backups.agents.length != 3)
 			throw 'Invalid conf.backups.agents[]'; // as per fixupConfig()
 
 		//
 		var div = document.querySelector('tt .backup-conf').cloneNode(true);
 
-		var locDiv = div.querySelector('.loc');
-		var remDiv = div.querySelector('.rem');
+		var locDiv  = div.querySelector('.loc');
+		var remDiv  = div.querySelector('.rem');
+		var gistDiv = div.querySelector('.gist');
 
-		var typ = (new SimpleBackup).type;
-		var loc = conf.backups.agents[0];
-		var rem = conf.backups.agents[1];
+		var typ  = (new SimpleBackup).type;
+		var gtyp = (new GistBackup).type;
+		var loc  = conf.backups.agents[0];
+		var rem  = conf.backups.agents[1];
+		var gst  = conf.backups.agents[2];
 
 		div.checking = 0;
 
@@ -4131,11 +4542,18 @@
 		locDiv.querySelector('.auth').value = loc.conf.auth;
 		remDiv.querySelector('.auth').value = rem.conf.auth;
 		remDiv.querySelector('.base').value = rem.conf.base;
+		gistDiv.querySelector('.gist-token').value = gst.conf.token;
+		gistDiv.querySelector('.gist-id').value    = gst.conf.gist_id;
 
 		setBackupConfigUi(locDiv, loc);
 		setBackupConfigUi(remDiv, rem);
+		setBackupConfigUi(gistDiv, gst);
 
-		if (! loc.enabled && ! rem.enabled)
+		// Hide restore link if no gist_id yet
+		if (! gst.conf.gist_id)
+			gistDiv.querySelector('.gist-restore-row').style.display = 'none';
+
+		if (! loc.enabled && ! rem.enabled && ! gst.enabled)
 			div.classList.add('off');
 
 		//
@@ -4166,7 +4584,7 @@
 						return slideUp(etc, 200);
 					}).then(function(){
 						optParent.classList.add('off');
-						if (locDiv.classList.contains('off') && remDiv.classList.contains('off'))
+						if (locDiv.classList.contains('off') && remDiv.classList.contains('off') && gistDiv.classList.contains('off'))
 							div.classList.add('off');
 						etc.style.opacity = '';
 					});
@@ -4197,6 +4615,57 @@
 				checkBackupConfig(foo.rem, remDiv, function(){ div.checking--; });
 			}
 
+			if (foo.gist.enabled)
+			{
+				div.checking++;
+				checkBackupConfig(foo.gist, gistDiv, function(){ div.checking--; });
+			}
+
+			return false;
+		});
+
+		// Gist restore handler
+		gistDiv.querySelector('.gist-restore').addEventListener('click', function(){
+
+			var token   = gistDiv.querySelector('.gist-token').value.trim();
+			var gistRaw = gistDiv.querySelector('.gist-id').value.trim();
+			var gistMatch = gistRaw.match(/gist\.github\.com\/[^\/]+\/([a-f0-9]+)/);
+			var gist_id = gistMatch ? gistMatch[1] : gistRaw;
+
+			if (! token || ! gist_id)
+			{
+				alert('Both Token and Gist ID are required to restore.');
+				return false;
+			}
+
+			if (! confirm('Restore all boards from this gist?\nExisting boards with the same ID will be overwritten.'))
+				return false;
+
+			var agent = new GistBackup('restore', { token: token, gist_id: gist_id }, function(){});
+			agent.restoreAll(function(ok, result){
+				if (! ok)
+				{
+					alert('Restore failed: ' + result);
+					return;
+				}
+
+				if (! result.length)
+				{
+					alert('No boards found in this gist.');
+					return;
+				}
+
+				var imported = 0;
+				result.forEach(function(board){
+					NB.storage.saveBoard(board);
+					imported++;
+				});
+
+				alert('Restored ' + imported + ' board(s) from gist.');
+				hideOverlay();
+				location.reload();
+			});
+
 			return false;
 		});
 
@@ -4212,8 +4681,12 @@
 			if (foo.rem.enabled && ! rem.enabled)
 				foo.rem.id = typ + '-' + (conf.backups.nextId++);
 
+			if (foo.gist.enabled && ! gst.enabled)
+				foo.gist.id = gtyp + '-' + (conf.backups.nextId++);
+
 			conf.backups.agents[0] = foo.loc;
 			conf.backups.agents[1] = foo.rem;
+			conf.backups.agents[2] = foo.gist;
 
 			NB.storage.initBackups(onBackupStatusChange);
 			NB.storage.saveConfig();
@@ -5621,6 +6094,7 @@
 	 */
 	NB.backupTypes = new Map();
 	NB.backupTypes.set( (new SimpleBackup).type, SimpleBackup );
+	NB.backupTypes.set( (new GistBackup).type, GistBackup );
 
 	NB.storage.initBackups(onBackupStatusChange);
 

@@ -21,6 +21,7 @@ The name also happens to abbreviate to [NB](https://en.wikipedia.org/wiki/Nota_b
   * [Nullboard Agent](https://nullboard.io/backups) - a native Windows app
   * [Nullboard Agent Express Port](https://github.com/justinpchang/nullboard-agent-express) - an express.js-based portable app
   * [nbagent](https://github.com/luismedel/nbagent) - a version for Unix systems, in Python
+* The data can also be backed up to a **GitHub Gist** - all boards are stored as files in a single secret gist, with automatic versioning via GitHub's gist revision history. Restore onto any device by providing the Gist ID and a GitHub token.
 
 ## Beta
 
